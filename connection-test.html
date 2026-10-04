@@ -1,0 +1,112 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>사랑방 연결 확인</title><link rel="icon" href="data:,"><style>body{font-family:system-ui,sans-serif;background:#f3f7fb;color:#31485b;margin:0;padding:30px}main{max-width:760px;margin:auto;background:white;border:1px solid #dce6ef;border-radius:22px;padding:26px}button,a{font:inherit}button{background:#e8f2ff;border:1px solid #c6dcef;border-radius:12px;padding:12px 16px;margin:4px;cursor:pointer}button:disabled{opacity:.5;cursor:wait}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f6f8fb;padding:18px;border-radius:12px;line-height:1.7}p{line-height:1.7}</style></head><body><main><h1>사랑방 연결 확인</h1><p>GAS 연결과 교사 목록을 순서대로 확인해 주세요.</p><button id="ping">연결 확인</button><button id="teachers">교사 목록 확인</button><a href="./">사랑방 열기</a><pre id="result" role="status" aria-live="polite">확인 버튼을 눌러 주세요.</pre></main><script>/* GitHub Pages용 GAS 연결 설정. 새 배포를 만들면 아래 주소를 교체하세요. */
+const HUB_GAS_WEB_APP_URL = 'https://script.google.com/a/macros/yulpo.es.kr/s/AKfycbyDYsFzKoW78wArgzgq1JIEMm5ldfkr_D08oRr3scqIDNmUHcGtWhkMbLoCApS00yWk/exec';
+const HUB_API_PROTOCOL = 'yulpo-http-v1';
+
+const hubHttp = (() => {
+  const methods = new Set(['ping', 'getPublicSettings', 'getTeacherList', 'getDashboardData',
+    'adminLogin', 'adminGetData', 'adminSaveRow', 'adminDeleteRow',
+    'adminUpdateWelcomeMessage', 'adminReorderRows']);
+
+  function endpoint() {
+    const url = new URL(HUB_GAS_WEB_APP_URL);
+    if (url.protocol !== 'https:' || url.hostname !== 'script.google.com' ||
+        !/^\/(?:a\/macros\/[^/]+\/s|macros\/s)\/[^/]+\/exec$/.test(url.pathname)) {
+      throw new Error('index.html의 HUB_GAS_WEB_APP_URL에 GAS 웹앱의 /exec 주소를 넣어 주세요.');
+    }
+    // 같은 배포 ID의 일반 주소를 사용합니다. 학교 도메인 경로와 쿼리는 전송하지 않습니다.
+    const id = url.pathname.split('/').slice(-2)[0];
+    return 'https://script.google.com/macros/s/' + id + '/exec';
+  }
+
+  async function call(method, args) {
+    if (!methods.has(method)) throw new Error('지원하지 않는 요청입니다.');
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 60000);
+    const mutation = ['adminSaveRow', 'adminDeleteRow', 'adminUpdateWelcomeMessage', 'adminReorderRows'].includes(method);
+    const uncertain = mutation ? ' 저장 결과를 확인한 후 다시 시도해 주세요.' : '';
+    try {
+      const response = await fetch(endpoint(), {
+        method: 'POST',
+        // application/json 및 사용자 정의 헤더를 쓰면 사전 OPTIONS 요청이 발생합니다.
+        headers: {'Content-Type': 'text/plain;charset=UTF-8'},
+        body: JSON.stringify({protocol: HUB_API_PROTOCOL, method, args}),
+        credentials: 'omit',
+        redirect: 'follow',
+        signal: controller.signal
+      });
+      if (!response.ok) {
+        const hint = response.status === 403 || response.status === 401
+          ? ' GAS 배포의 실행 사용자를 본인, 액세스 권한을 모든 사용자로 설정했는지 확인해 주세요.' : '';
+        throw new Error('GAS 응답 오류 (' + response.status + ').' + hint + uncertain);
+      }
+      let data;
+      try { data = JSON.parse(await response.text()); }
+      catch (_) {
+        throw new Error('GAS가 JSON 대신 로그인 화면 또는 오류 페이지를 반환했습니다. Code.gs 교체 후 새 버전으로 배포했는지 확인해 주세요.' + uncertain);
+      }
+      if (!data || data.protocol !== HUB_API_PROTOCOL || typeof data.ok !== 'boolean') {
+        throw new Error('GitHub용 백엔드 API가 반영되지 않았습니다. Code.gs를 교체하고 기존 배포를 새 버전으로 갱신해 주세요.' + uncertain);
+      }
+      if (!data.ok) throw new Error(data.message || '요청을 처리하지 못했습니다.');
+      return data.result;
+    } catch (error) {
+      if (error.name === 'AbortError') throw new Error('GAS 응답 시간이 초과되었습니다.' + uncertain);
+      if (error instanceof TypeError) {
+        throw new Error('GAS에 연결하지 못했습니다. 웹앱 주소, 인터넷 연결 및 로그인 없이 접근 가능한 배포 설정을 확인해 주세요.' + uncertain);
+      }
+      throw error;
+    } finally { clearTimeout(timer); }
+  }
+
+  function runner(success, failure) {
+    return new Proxy({}, {
+      get(_, method) {
+        if (method === 'withSuccessHandler') return handler => runner(handler, failure);
+        if (method === 'withFailureHandler') return handler => runner(success, handler);
+        if (method === 'then') return undefined;
+        if (!methods.has(method)) return undefined;
+        return (...args) => {
+          call(method, args).then(result => {
+            if (typeof success === 'function') success(result);
+          }).catch(error => {
+            if (typeof failure === 'function') failure(error);
+            else toast(error.message || 'GAS 연결 오류', 'error');
+          });
+        };
+      }
+    });
+  }
+  return {call, runner};
+})();
+
+function hubRun() {
+  // 이 파일을 GAS의 Index.html로 사용해도 기존 방식으로 작동합니다.
+  if (window.google && window.google.script && window.google.script.run) return window.google.script.run;
+  return hubHttp.runner();
+}
+
+function showHubConnectionError(error) {
+  hideLoading();
+  const box = document.getElementById('hubConnectionError');
+  document.getElementById('hubConnectionMessage').textContent = error.message || '연결하지 못했습니다.';
+  const link = document.getElementById('hubConnectionCheck');
+  try { link.href = new URL(HUB_GAS_WEB_APP_URL).href.replace(/\?.*$/, '') + '?action=connection'; }
+  catch (_) { link.removeAttribute('href'); }
+  box.style.display = 'flex';
+}
+
+async function testConnection(method){
+  const box=document.getElementById('result');
+  document.querySelectorAll('button').forEach(b=>b.disabled=true);
+  box.textContent='불러오는 중...';
+  try{
+    const result=await hubHttp.call(method,[]);
+    if(!result || !result.success)throw new Error(result && result.message || '요청 실패');
+    if(method==='ping')box.textContent='연결 성공\nAPI: '+result.apiVersion+'\n서버 시간: '+result.serverTime;
+    else box.textContent='교사 목록 연결 성공: '+result.teachers.length+'명\n\n'+result.teachers.map(t=>t.name).join('\n');
+  }catch(error){box.textContent=error.message;}
+  finally{document.querySelectorAll('button').forEach(b=>b.disabled=false);}
+}
+document.getElementById('ping').onclick=()=>testConnection('ping');
+document.getElementById('teachers').onclick=()=>testConnection('getTeacherList');
+</script></body></html>
