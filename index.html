@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" data-hub-layout="three-column-grade-v4">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -219,7 +219,7 @@ h1{
 
 .hero{
   display:grid;
-  grid-template-columns:1.35fr .65fr;
+  grid-template-columns:repeat(3,minmax(0,1fr));
   gap:28px;
   padding:27px;
   margin-bottom:14px;
@@ -322,10 +322,6 @@ h1{
   grid-template-columns:minmax(0,1fr) 165px;
   gap:13px;
   align-items:start;
-}
-
-.meal-summary{
-  margin-bottom:14px;
 }
 
 .content-grid{
@@ -1183,6 +1179,31 @@ th{
       repeat(2,minmax(0,1fr));
   }
 }
+
+/* 상단 세 칸과 그룹 선택 */
+.hero > div { min-width:0; }
+.hero-meal { border-left:1px solid rgba(100,130,150,.18); padding-left:22px; }
+.hero-meal .card-title { font-size:14px; margin-bottom:10px; }
+.choice-panel { border:1px solid #dbe6ee; border-radius:12px; padding:12px; background:#f8fbfd; }
+.choice-list { max-height:230px; overflow:auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:10px; }
+.choice-panel label.choice { display:flex; align-items:center; gap:8px; padding:8px; border-radius:8px; background:white; cursor:pointer; font-size:13px; margin:0; }
+.choice-panel input[type=checkbox] { width:16px; height:16px; margin:0; flex-shrink:0; }
+.choice-help { color:#718692; font-size:12px; line-height:1.6; margin-top:8px; }
+.choice-panel .choice-search { width:100%; margin-bottom:4px; }
+.notice-target { margin-top:5px; color:#607f92; font-size:11px; }
+@media(max-width:900px){ .hero-meal{border-left:0;border-top:1px solid rgba(100,130,150,.18);padding-left:0;padding-top:16px;} }
+@media(max-width:520px){ .choice-list{grid-template-columns:1fr;} }
+
+
+.target-dropdown { width:100%; }
+.target-dropdown-button { width:100%; padding:11px 13px; border:1px solid #dbe6ee; border-radius:10px; background:white; text-align:left; font:inherit; color:#38576b; cursor:pointer; white-space:normal; line-height:1.5; }
+.target-dropdown-menu { display:none; margin-top:8px; }
+.target-dropdown-menu.show { display:block; }
+.target-dropdown-menu .choice-list { max-height:210px; }
+.target-chips { display:flex; gap:5px; flex-wrap:wrap; margin-top:7px; }
+.target-chip { display:inline-flex; align-items:center; gap:5px; border-radius:20px; padding:4px 9px; background:#eaf3fd; color:#4a6b88; font-size:12px; }
+.target-chip button { border:0; background:transparent; color:#587b98; font-size:16px; padding:0 2px; cursor:pointer; }
+
 </style>
 </head>
 
@@ -1376,15 +1397,17 @@ th{
     </div>
   </div>
 
-</section>
-
-    <section class="card meal-summary">
+    <div class="hero-meal">
       <div class="card-title">
         🍚 오늘의 급식
       </div>
 
       <div id="mealArea"></div>
-    </section>
+    </div>
+
+</section>
+
+
 
 <div class="main-layout">
 
@@ -1418,28 +1441,17 @@ th{
 
     <section class="card">
       <div class="card-title">
-        <div class="card-title-left">
-          <span>
-            📅 오늘 일정
-          </span>
-
-          <span
-            id="scheduleCount"
-            class="count"
-          >
-            (0)
-          </span>
-        </div>
+        <div class="card-title-left"><span>👥 학년별 알림</span><span id="gradeNoticeCount" class="count">(0)</span></div>
+        <button id="gradeNoticeAddBtn" class="add-btn">+ 학년 알림</button>
       </div>
-
-      <div id="scheduleList"></div>
+      <div id="gradeNoticeList"></div>
     </section>
 
     <section class="card">
       <div class="card-title">
         <div class="card-title-left">
           <span>
-            ✅ 오늘 해야 할 일
+            ✅ 오늘의 할 일
           </span>
 
           <span
@@ -1461,7 +1473,24 @@ th{
       <div id="taskList"></div>
     </section>
 
+    <section class="card">
+      <div class="card-title">
+        <div class="card-title-left">
+          <span>
+            📅 오늘 일정
+          </span>
 
+          <span
+            id="scheduleCount"
+            class="count"
+          >
+            (0)
+          </span>
+        </div>
+      </div>
+
+      <div id="scheduleList"></div>
+    </section>
 
   </div>
 
@@ -1543,11 +1572,11 @@ th{
   >
 
     <h2>
-      🔐 관리자 로그인
+      🔐 공지 작성·관리 로그인
     </h2>
 
     <div class="modal-desc">
-      관리자 비밀번호를 입력해 주세요.
+      비밀번호에 따라 총괄 관리자, 관리자, 학년 공지 작성자로 로그인합니다.
     </div>
 
     <div class="field">
@@ -1744,6 +1773,7 @@ th{
         ✅ 할 일
       </button>
 
+      <button id="groupsTab" class="btn settings-tab" style="display:none;">👥 그룹 구성</button>
       <button
         id="teachersTab"
         class="btn settings-tab"
@@ -1969,6 +1999,9 @@ let adminToken = '';
 let adminRole = '';
 
 let adminData = {};
+let adminGroups = [];
+let adminTeachers = [];
+let pendingGradeNotice = false;
 
 let editSheet = '';
 
@@ -2372,12 +2405,21 @@ function renderQuote(){
    ========================================================= */
 
 function renderNotices(){
+  renderNoticeArea('학교','noticeList','noticeCount');
+  renderNoticeArea('학년','gradeNoticeList','gradeNoticeCount');
+}
 
-  const rows =
-    dashboard.notices || [];
+function getNoticeType(row){
+  if(row.noticeType === '학교' || row.noticeType === '학년') return row.noticeType;
+  return !row.target || row.target === '전체' ? '학교' : '학년';
+}
+
+function renderNoticeArea(type,listId,countId){
+  const rows = (dashboard.notices || []).map((row,index)=>({row,index}))
+    .filter(item=>getNoticeType(item.row) === type);
 
   text(
-    'noticeCount',
+    countId,
     '(' +
     rows.length +
     ')'
@@ -2386,14 +2428,14 @@ function renderNotices(){
   const area =
     document
       .getElementById(
-        'noticeList'
+        listId
       );
 
   if(!rows.length){
 
     area.innerHTML =
       empty(
-        '알림이 없습니다.'
+        type === '학년' ? '선택한 선생님에게 표시할 학년 알림이 없습니다.' : '학교 전체 공지가 없습니다.'
       );
 
     return;
@@ -2401,7 +2443,7 @@ function renderNotices(){
 
   area.innerHTML =
     rows.map(
-      (row,index) => `
+      ({row,index}) => `
         <div class="item">
 
           <div class="item-icon">
@@ -2425,7 +2467,7 @@ function renderNotices(){
               </div>
 
               ${
-                adminRole
+                (adminRole && (adminRole !== 'grade' || type === '학년'))
                   ? `
                     <div class="inline-tools">
 
@@ -2450,6 +2492,7 @@ function renderNotices(){
 
             </div>
 
+            <div class="notice-target">${escapeHtml(row.targetLabel || getTargetLabel(row.target))}</div>
             ${
               row.endDate
                 ? `
@@ -2671,7 +2714,7 @@ function renderTasks(){
                 </div>
 
                 ${
-                  adminRole
+                  (adminRole && adminRole !== 'grade')
                     ? `
                       <div class="inline-tools">
 
@@ -3271,6 +3314,7 @@ function doAdminLogin(){
           function(){
 
             renderDashboard();
+            if(pendingGradeNotice){ pendingGradeNotice = false; addNotice('학년'); }
 
             toast(
               result.roleName +
@@ -3313,6 +3357,8 @@ function loadAdminData(
 
         adminData =
           result.data || {};
+        adminGroups = result.groupsForOptions || [];
+        adminTeachers = result.teachersForOptions || [];
 
         if(callback){
           callback();
@@ -3374,8 +3420,10 @@ function updateAdminUi(){
     .classList
     .toggle(
       'show',
-      active
+      active && adminRole !== 'grade'
     );
+
+  document.getElementById('gradeNoticeAddBtn').classList.toggle('show', true);
 
   document
     .getElementById(
@@ -3384,7 +3432,7 @@ function updateAdminUi(){
     .classList
     .toggle(
       'show',
-      active
+      active && adminRole !== 'grade'
     );
 
   document
@@ -3392,7 +3440,7 @@ function updateAdminUi(){
       'welcomeEditBtn'
     )
     .style.display =
-      active
+      active && adminRole !== 'grade'
         ? ''
         : 'none';
 
@@ -3444,13 +3492,16 @@ function updateAdminUi(){
 
     text(
       'adminTitle',
-      '✏️ 일반 관리자 모드'
+      '✏️ 관리자 모드'
     );
 
     text(
       'adminDescription',
       ' · 공지, 할 일, 환영 문구를 관리할 수 있습니다.'
     );
+  }else if(adminRole === 'grade'){
+    text('adminTitle','👥 학년 공지 작성 모드');
+    text('adminDescription',' · 학년별 알림을 작성·수정·삭제할 수 있습니다.');
   }
 }
 
@@ -3461,6 +3512,8 @@ function exitAdminMode(){
   adminRole = '';
 
   adminData = {};
+  adminGroups = [];
+  adminTeachers = [];
 
   renderDashboard();
 }
@@ -3470,11 +3523,13 @@ function exitAdminMode(){
    NOTICE ADMIN
    ========================================================= */
 
-function addNotice(){
+function addNotice(noticeType = '학교'){
+  if(adminRole === 'grade') noticeType = '학년';
 
   openEditor(
     'Notices',
     {
+      noticeType:noticeType,
       title:'',
       content:'',
       startDate:
@@ -3969,9 +4024,12 @@ function openEditor(
       record || {}
     );
 
+  if(sheet === 'Notices') editRecord.noticeType = getNoticeType(editRecord);
+
   const fields = {
 
     Notices:[
+      'noticeType',
       'title',
       'content',
       'startDate',
@@ -4011,6 +4069,8 @@ function openEditor(
       'useYn'
     ],
 
+    Groups:['name','teacherIds','useYn'],
+
     Teachers:[
       'name',
       'role',
@@ -4049,8 +4109,9 @@ function openEditor(
             [
               'content',
               'description',
-              'message'
-            ].includes(field)
+              'message',
+              'teacherIds'
+            ].includes(field) || field === 'target'
               ? ' full'
               : ''
           );
@@ -4061,7 +4122,7 @@ function openEditor(
           );
 
         label.textContent =
-          getFieldLabel(field);
+          sheet === 'Groups' && field === 'name' ? '그룹 이름' : getFieldLabel(field);
 
         wrapper.appendChild(
           label
@@ -4071,7 +4132,21 @@ function openEditor(
 
         /* 사용 여부 */
 
-        if(
+        if(field === 'noticeType'){
+          control = document.createElement('select');
+          control.id = 'noticeTypeSelect';
+          control.dataset.field = field;
+          control.innerHTML = '<option value="학교">학교 전체 공지</option><option value="학년">동학년 안내</option>';
+          control.value = editRecord.noticeType;
+          control.onchange = updateNoticeTargetUi;
+          if(adminRole === 'grade') control.disabled = true;
+        }else if(sheet === 'Notices' && field === 'target'){
+          control = createHubTargetDropdown(editRecord.target || '전체');
+          control.id = 'noticeTargetControl';
+        }else if(sheet === 'Groups' && field === 'teacherIds'){
+          const members = (adminData.Teachers || adminTeachers).map(t=>({value:String(t.teacherId),label:getTeacherDisplayName(t)+(t.useYn === 'N' ? ' (사용 안 함)' : '')}));
+          control = createHubChoices('teacherIds', editRecord.teacherIds || '', members, false);
+        }else if(
           field === 'useYn'
         ){
 
@@ -4242,24 +4317,8 @@ function openEditor(
 
         /* 대상 */
 
-        }else if(
-          field === 'target'
-        ){
-
-          control =
-            document.createElement(
-              'input'
-            );
-
-          control.dataset.field =
-            field;
-
-          control.value =
-            editRecord[field] ||
-            '전체';
-
-          control.placeholder =
-            '기본값: 전체';
+        }else if(field === 'target'){
+          control = createHubTargetDropdown(editRecord.target || '전체');
 
         /* 일반 입력 */
 
@@ -4288,6 +4347,7 @@ function openEditor(
             [
               'adminPassword',
               'userPassword',
+              'password',
               'neisApiKey'
             ].includes(
               editRecord.key
@@ -4328,6 +4388,8 @@ function openEditor(
         );
       }
     );
+
+  if(sheet === 'Notices') updateNoticeTargetUi();
 
   text(
     'editorTitle',
@@ -4373,6 +4435,22 @@ function saveEditor(){
           control.value;
       }
     );
+
+  if(editSheet === 'Notices'){
+    if(record.noticeType === '학교') record.target = '전체';
+    if(!String(record.target || '').trim()){
+      toast('동학년 안내의 대상을 하나 이상 선택해 주세요.','error');
+      return;
+    }
+  }
+  if(['Tasks','Links'].includes(editSheet) && !String(record.target || '').trim()){
+    toast('대상을 하나 이상 선택해 주세요.','error');
+    return;
+  }
+  if(editSheet === 'Groups' && !String(record.name || '').trim()){
+    toast('그룹 이름을 입력해 주세요.','error');
+    return;
+  }
 
   if(
     (
@@ -4447,6 +4525,8 @@ function saveEditor(){
 
               adminData =
                 adminResult.data || {};
+              adminGroups = adminResult.groupsForOptions || [];
+              adminTeachers = adminResult.teachersForOptions || [];
 
               hubRun()
                 .withSuccessHandler(
@@ -4677,6 +4757,8 @@ function doDelete(){
 
               adminData =
                 adminResult.data || {};
+              adminGroups = adminResult.groupsForOptions || [];
+              adminTeachers = adminResult.teachersForOptions || [];
 
               deleteSheet = '';
 
@@ -4816,7 +4898,7 @@ function openSettings(){
     return;
   }
 
-  currentSettingsTab = 'Welcome';
+  currentSettingsTab = adminRole === 'grade' ? 'Notices' : 'Welcome';
   renderSettings();
   showModal('settingsModal');
 }
@@ -4831,31 +4913,32 @@ function renderSettings(){
 
   const allowedTabs =
     isSuperAdmin
-      ? ['Welcome','Notices','Tasks','Teachers','Settings']
-      : ['Welcome','Notices','Tasks'];
+      ? ['Welcome','Notices','Tasks','Groups','Teachers','Settings']
+      : adminRole === 'grade' ? ['Notices'] : ['Welcome','Notices','Tasks'];
 
   if(!allowedTabs.includes(currentSettingsTab)){
-    currentSettingsTab = 'Welcome';
+    currentSettingsTab = adminRole === 'grade' ? 'Notices' : 'Welcome';
   }
 
   text(
     'settingsModalTitle',
     isSuperAdmin
       ? '⚙️ 총괄 관리자 설정'
-      : '⚙️ 일반 관리자 설정'
+      : adminRole === 'grade' ? '👥 학년별 알림 관리' : '⚙️ 관리자 설정'
   );
 
   text(
     'settingsModalDesc',
     isSuperAdmin
-      ? '환영 문구, 공지사항, 할 일, 교직원과 기본 설정을 한 곳에서 관리합니다.'
-      : '환영 문구, 공지사항과 할 일을 한 곳에서 관리합니다.'
+      ? '환영 문구, 공지사항, 할 일, 그룹 구성, 교직원과 기본 설정을 관리합니다.'
+      : adminRole === 'grade' ? '학년별 알림을 작성하고 대상을 선택할 수 있습니다.' : '환영 문구, 공지사항과 할 일을 한 곳에서 관리합니다.'
   );
 
   const tabMap = {
     Welcome:'welcomeTab',
     Notices:'noticesTab',
     Tasks:'tasksTab',
+    Groups:'groupsTab',
     Teachers:'teachersTab',
     Settings:'settingsTab'
   };
@@ -4882,10 +4965,13 @@ function renderSettings(){
 
   if(currentSettingsTab === 'Notices'){
     addButton.style.display = '';
-    addButton.textContent = '+ 공지 추가';
+    addButton.textContent = adminRole === 'grade' ? '+ 학년 알림' : '+ 공지 추가';
   }else if(currentSettingsTab === 'Tasks'){
     addButton.style.display = '';
     addButton.textContent = '+ 할 일 추가';
+  }else if(currentSettingsTab === 'Groups' && isSuperAdmin){
+    addButton.style.display = '';
+    addButton.textContent = '+ 그룹 추가';
   }else if(currentSettingsTab === 'Teachers' && isSuperAdmin){
     addButton.style.display = '';
     addButton.textContent = '+ 교직원 추가';
@@ -4897,13 +4983,14 @@ function renderSettings(){
     Welcome:'환영 문구',
     Notices:'공지사항 관리',
     Tasks:'할 일 관리',
+    Groups:'그룹 구성',
     Teachers:'교직원 관리',
     Settings:'기본 설정'
   };
 
   text(
     'settingsTitle',
-    titleMap[currentSettingsTab] || '관리'
+    adminRole === 'grade' ? '학년별 알림 관리' : titleMap[currentSettingsTab] || '관리'
   );
 
   const area =
@@ -5024,13 +5111,13 @@ function renderSettings(){
                     <tr>
                       <td>
                         <span class="cell-ellipsis" title="${escapeAttr(row.title || '')}">
-                          ${escapeHtml(row.title || '')}
+                          <small>${getNoticeType(row) === '학교' ? '학교' : '동학년'}</small> ${escapeHtml(row.title || '')}
                         </span>
                       </td>
                       <td>${escapeHtml(formatManagePeriod(row.startDate,row.endDate))}</td>
                       <td>
-                        <span class="cell-ellipsis" title="${escapeAttr(row.target || '전체')}">
-                          ${escapeHtml(row.target || '전체')}
+                        <span class="cell-ellipsis" title="${escapeAttr(getTargetLabel(row.target))}">
+                          ${escapeHtml(getTargetLabel(row.target))}
                         </span>
                       </td>
                       <td>${String(row.useYn || 'Y').toUpperCase() === 'Y' ? '사용' : '사용 안 함'}</td>
@@ -5100,6 +5187,15 @@ function renderSettings(){
       </table>
     `;
 
+  }else if(currentSettingsTab === 'Groups'){
+    html = `<div class="choice-help">그룹을 수정하여 소속 교직원을 선택하세요. 한 선생님이 여러 그룹에 속할 수 있습니다.</div>
+      <table><thead><tr><th>그룹 이름</th><th>구성원</th><th>사용</th><th class="manage-tools-cell">관리</th></tr></thead><tbody>
+      ${pageRows.length ? pageRows.map(({row,index})=>`<tr>
+        <td>${escapeHtml(row.name || '')}</td><td>${escapeHtml(getGroupMembersLabel(row))}</td>
+        <td>${row.useYn === 'N' ? '사용 안 함' : '사용'}</td><td>
+        <button class="mini" onclick="editManagedRow('Groups',${index})">✏️</button>
+        <button class="mini delete" onclick="deleteManagedRow('Groups',${index})">🗑️</button></td></tr>`).join('')
+        : '<tr><td colspan="4">그룹이 없습니다. + 그룹 추가를 눌러 구성하세요.</td></tr>'}</tbody></table>`;
   }else if(currentSettingsTab === 'Teachers'){
     html = `
       <table>
@@ -5207,6 +5303,7 @@ function getSettingsSearchPlaceholder(tab){
   return {
     Notices:'공지 제목, 내용, 대상, 날짜 검색',
     Tasks:'할 일 제목, 설명, 대상, 날짜 검색',
+    Groups:'그룹 이름 또는 구성원 검색',
     Teachers:'이름 또는 역할 검색',
     Settings:'항목명 또는 설명 검색'
   }[tab] || '검색어를 입력하세요';
@@ -5239,7 +5336,8 @@ function filterSettingsRows(tab,rows,query){
           row.content,
           row.startDate,
           row.endDate,
-          row.target,
+          getTargetLabel(row.target),
+          getNoticeType(row),
           row.priority,
           row.url,
           row.useYn
@@ -5259,6 +5357,8 @@ function filterSettingsRows(tab,rows,query){
           row.completedYn,
           row.useYn
         ];
+      }else if(tab === 'Groups'){
+        values = [row.name,getGroupMembersLabel(row),row.useYn];
       }else if(tab === 'Teachers'){
         values = [
           row.name,
@@ -5488,7 +5588,7 @@ function deleteManagedRow(sheet,index){
     row[key],
     sheet === 'Notices'
       ? '이 공지를 삭제하시겠습니까?'
-      : '이 할 일을 삭제하시겠습니까?'
+      : sheet === 'Groups' ? '이 그룹을 삭제하시겠습니까?' : '이 할 일을 삭제하시겠습니까?'
   );
 }
 
@@ -5589,7 +5689,7 @@ function saveWelcomeFromSettings(){
 function maskSetting(row){
   if(
     row.isSensitive ||
-    ['adminPassword','userPassword','neisApiKey'].includes(row.key)
+    ['adminPassword','userPassword','password','neisApiKey'].includes(row.key)
   ){
     return '••••••••';
   }
@@ -5925,6 +6025,8 @@ function getPrimaryKey(
     Notices:
       'noticeId',
 
+    Groups:'groupId',
+
     Tasks:
       'taskId',
 
@@ -5951,6 +6053,8 @@ function getSheetLabel(
     Notices:
       '공지사항',
 
+    Groups:'그룹',
+
     Tasks:
       '오늘 해야 할 일',
 
@@ -5974,6 +6078,9 @@ function getFieldLabel(
 ){
 
   return {
+    noticeType:'공지 구분',
+    teacherIds:'구성원 선택',
+
     title:
       '제목',
 
@@ -6231,6 +6338,7 @@ document
   )
   .onclick =
     function(){
+      pendingGradeNotice = false;
 
       hideModal(
         'loginModal'
@@ -6442,6 +6550,8 @@ document
     function(){
       if(currentSettingsTab === 'Notices'){
         addNotice();
+      }else if(currentSettingsTab === 'Groups' && adminRole === 'admin'){
+        addGroup();
       }else if(currentSettingsTab === 'Tasks'){
         addTask();
       }else if(
@@ -6489,6 +6599,148 @@ document
         'settingsModal'
       );
     };
+
+
+function getGroupRows(){
+  return adminRole === 'admin' && adminData.Groups ? adminData.Groups : adminGroups;
+}
+function hubList(value){ return [...new Set(String(value || '').split(',').map(v=>v.trim()).filter(Boolean))]; }
+function getTargetLabel(value){
+  return hubList(value || '전체').map(token=>{
+    const group = getGroupRows().find(g=>'group:'+g.groupId === token);
+    if(token.startsWith('group:')) return group ? group.name : '사용할 수 없는 그룹';
+    const teacher=adminTeachers.find(t=>String(t.teacherId) === token);
+    return teacher ? getTeacherDisplayName(teacher) : token;
+  }).join(', ');
+}
+function getGroupMembersLabel(group){
+  const ids = hubList(group.teacherIds);
+  return ids.length ? ids.map(id=>{
+    const teacher = (adminData.Teachers || adminTeachers).find(t=>String(t.teacherId) === id);
+    return teacher ? teacher.name : '등록되지 않은 교직원';
+  }).join(', ') : '구성원 없음';
+}
+function getNoticeTargetOptions(current){
+  const options = getGroupRows().filter(g=>g.useYn !== 'N' || hubList(current).includes('group:'+g.groupId))
+    .map(g=>({value:'group:'+g.groupId,label:'그룹 · '+g.name+(g.useYn === 'N' ? ' (사용 안 함)' : ''),kind:'그룹'}));
+  adminTeachers.forEach(teacher=>{
+    const value=String(teacher.teacherId);
+    if(!options.some(o=>o.value === value)) options.push({value:value,label:'사용자 · '+getTeacherDisplayName(teacher),kind:'사용자'});
+  });
+  // 기존 학년·역할·개인 대상은 수정 시 보존합니다.
+  hubList(current).filter(v=>v !== '전체' && !options.some(o=>o.value === v)).forEach(v=>{
+    options.push({value:v,label:v.startsWith('group:') ? '사용할 수 없는 기존 그룹' : '기존 대상: '+v});
+  });
+  return options;
+}
+function createHubChoices(field,value,options,allowAll){
+  const panel = document.createElement('div'); panel.className = 'choice-panel';
+  const hidden = document.createElement('input'); hidden.type='hidden'; hidden.dataset.field=field; hidden.value=value; panel.appendChild(hidden);
+  const selected = new Set(hubList(value));
+  const choices = [];
+  const list = document.createElement('div'); list.className='choice-list';
+  const sync = ()=>{ hidden.value=choices.filter(item=>item.box.checked).map(item=>item.value).join(','); if(panel.onHubSelectionChange) panel.onHubSelectionChange(); };
+  const add = option=>{
+    const label = document.createElement('label'); label.className='choice';
+    const box = document.createElement('input'); box.type='checkbox'; box.value=option.value; box.checked=selected.has(option.value);
+    const name = document.createElement('span'); name.textContent=option.label; label.appendChild(box); label.appendChild(name);
+    label.dataset.targetKind=option.kind || '';
+    choices.push({box,value:option.value,label});
+    box.onchange=()=>{
+      if(allowAll && box.checked){
+        choices.forEach(item=>{ if(item.box !== box && (box.value === '전체' || item.value === '전체')) item.box.checked=false; });
+      }
+      sync();
+    };
+    return label;
+  };
+  if(allowAll) panel.appendChild(add({value:'전체',label:'전체 교직원'}));
+  if(!allowAll){
+    const search=document.createElement('input'); search.type='search'; search.className='choice-search'; search.placeholder='교직원 이름 검색';
+    search.oninput=()=>{ const query=search.value.trim(); choices.forEach(item=>item.label.style.display=item.label.textContent.includes(query) ? '' : 'none'); };
+    panel.appendChild(search);
+  }
+  options.forEach(option=>list.appendChild(add(option))); panel.appendChild(list);
+  const help=document.createElement('div');help.className='choice-help';
+  help.textContent=allowAll ? '그룹과 사용자를 여러 명 선택할 수 있습니다. 전체를 선택하면 모든 교직원에게 표시됩니다.' : '구성원을 여러 명 선택하세요. 한 선생님이 여러 그룹에 속할 수 있습니다.';
+  panel.appendChild(help);
+  return panel;
+}
+function updateNoticeTargetUi(){
+  const type=document.getElementById('noticeTypeSelect');
+  const panel=document.getElementById('noticeTargetControl');
+  if(!type || !panel) return;
+  const input=panel.querySelector('input[data-field="target"]');
+  if(type.value === '학교'){
+    if(input.value !== '전체') panel.savedTarget=input.value;
+    input.value='전체';panel.style.display='none';
+  }else{
+    panel.style.display='';
+    if(panel.savedTarget){
+      input.value=panel.savedTarget;
+      const selected=new Set(hubList(input.value));
+      panel.querySelectorAll('input[type="checkbox"]').forEach(box=>box.checked=selected.has(box.value));
+      panel.savedTarget='';
+      const menu=panel.querySelector('.target-dropdown-menu');
+      if(menu && menu.onHubSelectionChange) menu.onHubSelectionChange();
+    }
+  }
+}
+function addGroup(){ openEditor('Groups',{name:'',teacherIds:'',useYn:'Y'}); }
+document.getElementById('groupsTab').onclick=function(){currentSettingsTab='Groups';renderSettings();};
+document.getElementById('gradeNoticeAddBtn').onclick=function(){
+  if(!adminRole){ pendingGradeNotice = true; openAdminLogin(); return; }
+  addNotice('학년');
+};
+document.getElementById('editorForm').addEventListener('keydown',function(event){
+  if(event.key === 'Enter' && !event.isComposing && event.target.tagName === 'INPUT' && !['checkbox','search'].includes(event.target.type)){
+    event.preventDefault();saveEditor();
+  }
+});
+
+
+function createHubTargetDropdown(value){
+  const wrapper=document.createElement('div');wrapper.className='target-dropdown';
+  const button=document.createElement('button');button.type='button';button.className='target-dropdown-button';
+  button.setAttribute('aria-expanded','false');button.setAttribute('aria-label','대상 그룹 또는 사용자 선택');
+  const options=getNoticeTargetOptions(value);
+  const panel=createHubChoices('target',value,options,true);panel.classList.add('target-dropdown-menu');
+  const search=document.createElement('input');search.type='search';search.placeholder='그룹 또는 사용자 이름 검색';search.className='choice-search';
+  const list=panel.querySelector('.choice-list');
+  panel.insertBefore(search,list);
+  search.oninput=()=>{
+    const query=search.value.trim().toLowerCase();
+    panel.querySelectorAll('label.choice').forEach(label=>{
+      label.style.display=label.textContent.toLowerCase().includes(query) ? '' : 'none';
+    });
+  };
+  const chips=document.createElement('div');chips.className='target-chips';
+  const input=panel.querySelector('input[data-field="target"]');
+  const refresh=()=>{
+    const values=hubList(input.value);
+    const labelFor=token=>token==='전체' ? '전체 교직원' : (options.find(o=>o.value===token) || {label:token}).label;
+    button.textContent=values.length ? values.map(labelFor).join(', ')+' ▾' : '그룹 또는 사용자 선택 ▾';
+    chips.innerHTML='';
+    values.forEach(token=>{
+      const chip=document.createElement('span');chip.className='target-chip';
+      const name=document.createElement('span');name.textContent=labelFor(token);chip.appendChild(name);
+      const remove=document.createElement('button');remove.type='button';remove.textContent='×';remove.setAttribute('aria-label',labelFor(token)+' 선택 해제');
+      remove.onclick=()=>{
+        panel.querySelectorAll('input[type="checkbox"]').forEach(box=>{if(box.value===token){box.checked=false;box.onchange();}});
+      };
+      chip.appendChild(remove);chips.appendChild(chip);
+    });
+  };
+  panel.onHubSelectionChange=refresh;
+  button.onclick=()=>{
+    const show=!panel.classList.contains('show');panel.classList.toggle('show',show);button.setAttribute('aria-expanded',String(show));
+    if(show) search.focus();
+  };
+  wrapper.addEventListener('keydown',event=>{
+    if(event.key==='Escape'){event.preventDefault();event.stopPropagation();panel.classList.remove('show');button.setAttribute('aria-expanded','false');button.focus();}
+  });
+  wrapper.appendChild(button);wrapper.appendChild(chips);wrapper.appendChild(panel);refresh();return wrapper;
+}
 
 </script>
 
