@@ -1916,8 +1916,8 @@ const hubHttp = (() => {
         if (method === 'then') return undefined;
         if (!methods.has(method)) return undefined;
         return (...args) => {
-          call(method, args).then(result => {
-            if (typeof success === 'function') success(result);
+          return call(method, args).then(result => {
+            if (typeof success === 'function') return success(result);
           }).catch(error => {
             if (typeof failure === 'function') failure(error);
             else toast(error.message || 'GAS 연결 오류', 'error');
@@ -2076,135 +2076,67 @@ function hideLoading(){
    DASHBOARD
    ========================================================= */
 
-function loadDashboard(
-  options={}
-){
-
-  const showOverlay =
-    options.showOverlay === true;
-
-  const successMessage =
-    options.successMessage || '';
-
-  const onFinish =
-    typeof options.onFinish ===
-    'function'
-      ? options.onFinish
-      : null;
-
-  if(!teacherId){
-
+function loadDashboard(options = {}) {
+  const showOverlay = options.showOverlay === true;
+  const onFinish = typeof options.onFinish === 'function' ? options.onFinish : null;
+  if (!teacherId) {
     loadTeachers(true);
-
     return;
   }
+  if (showOverlay) {
+    showLoading(options.loadingMessage || '불러오는 중...');
+  }
 
-  if(showOverlay){
-
-    showLoading(
-      options.loadingMessage ||
-      '불러오는 중...'
-    );
+  function finishLoading() {
+    if (showOverlay) hideLoading();
+    if (onFinish) onFinish();
   }
 
   hubRun()
-    .withSuccessHandler(
-      async function(result){
-
-        if(
-          !result ||
-          !result.success
-        ){
-
-          if(showOverlay){
-            hideLoading();
-          }
-
-          if(onFinish){
-            onFinish();
-          }
-
-          toast(
-            result &&
-            result.message
-              ? result.message
-              : '정보를 불러오지 못했습니다.',
-            'error'
-          );
-
-          return;
+    .withSuccessHandler(function(result) {
+      try {
+        if (!result || !result.success) {
+          throw new Error(result && result.message || '정보를 불러오지 못했습니다.');
         }
-
-        try{
-
-          result.schedules =
-            await loadExternalSchedule(
-              result
-                .settings
-                .externalScheduleUrl,
-              result.today.date
-            );
-
-          result.schedules =
-            sortSchedules(
-              result.schedules
-            );
-
-        }catch(error){
-
-          result.schedules = [];
-        }
-
+        // 사랑방을 먼저 표시하고 외부 일정은 별도로 조회합니다.
+        result.schedules = [];
         dashboard = result;
-
         renderDashboard();
-
-        setAutoRefresh(
-          result
-            .settings
-            .refreshMinutes || 5
-        );
-
-        if(showOverlay){
-          hideLoading();
+        setAutoRefresh(result.settings.refreshMinutes || 5);
+        if (options.successMessage) toast(options.successMessage, 'success');
+        const scheduleUrl = result.settings.externalScheduleUrl;
+        if (scheduleUrl) {
+          document.getElementById('scheduleList').textContent = '학교 일정을 불러오는 중...';
+          loadExternalSchedule(scheduleUrl, result.today.date)
+            .then(function(rows) {
+              // 새로 불러온 화면에 이전 요청의 결과를 덮어쓰지 않습니다.
+              if (dashboard !== result) return;
+              result.schedules = sortSchedules(rows);
+              renderSchedules();
+            })
+            .catch(function(error) {
+              if (dashboard !== result) return;
+              result.schedules = [];
+              document.getElementById('scheduleList').textContent =
+                '학교 일정을 불러오지 못했습니다. 새로고침으로 다시 시도해 주세요.';
+              console.warn('학교 일정 조회 실패:', error);
+            });
         }
-
-        if(onFinish){
-          onFinish();
-        }
-
-        if(successMessage){
-
-          toast(
-            successMessage,
-            'success'
-          );
-        }
+      } catch (error) {
+        console.error('사랑방 화면 처리 실패:', error);
+        toast(error.message || '화면을 표시하지 못했습니다.', 'error');
+      } finally {
+        finishLoading();
       }
-    )
-    .withFailureHandler(
-      function(error){
-
-        if(showOverlay){
-          hideLoading();
-        }
-
-        if(onFinish){
-          onFinish();
-        }
-
-        toast(
-          error &&
-          error.message
-            ? error.message
-            : '정보를 불러오지 못했습니다.',
-          'error'
-        );
+    })
+    .withFailureHandler(function(error) {
+      try {
+        toast(error && error.message || '정보를 불러오지 못했습니다.', 'error');
+      } finally {
+        finishLoading();
       }
-    )
-    .getDashboardData(
-      teacherId
-    );
+    })
+    .getDashboardData(teacherId);
 }
 
 
