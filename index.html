@@ -324,6 +324,10 @@ h1{
   align-items:start;
 }
 
+.meal-summary{
+  margin-bottom:14px;
+}
+
 .content-grid{
   display:grid;
   grid-template-columns:
@@ -1374,6 +1378,14 @@ th{
 
 </section>
 
+    <section class="card meal-summary">
+      <div class="card-title">
+        🍚 오늘의 급식
+      </div>
+
+      <div id="mealArea"></div>
+    </section>
+
 <div class="main-layout">
 
   <div class="content-grid">
@@ -1449,13 +1461,7 @@ th{
       <div id="taskList"></div>
     </section>
 
-    <section class="card">
-      <div class="card-title">
-        🍚 오늘의 급식
-      </div>
 
-      <div id="mealArea"></div>
-    </section>
 
   </div>
 
@@ -6550,9 +6556,3 @@ document
       hideModal(
         'settingsModal'
       );
-    };
-
-</script>
-
-</body>
-</html>
