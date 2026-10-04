@@ -1,0 +1,5629 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>율포초 교사 사랑방</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+html,
+body{
+  min-height:100%;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:#f5f8fb;
+  color:#334d61;
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Noto Sans KR",
+    sans-serif;
+}
+
+button,
+input,
+select,
+textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+}
+
+button:disabled{
+  opacity:.55;
+  cursor:not-allowed;
+}
+
+.app{
+  width:85%;
+  max-width:1500px;
+  margin:0 auto;
+  padding:22px 0 40px;
+  transition:
+    filter .18s ease,
+    opacity .18s ease;
+}
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+body.loading{
+  overflow:hidden;
+}
+
+body.loading .app{
+  filter:blur(7px);
+  opacity:.38;
+  pointer-events:none;
+}
+
+.loading-screen{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:rgba(245,248,251,.46);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+
+.loading-screen.hide{
+  display:none;
+}
+
+.loading-box{
+  min-width:210px;
+  padding:24px 32px;
+  border:1px solid #e2ebf0;
+  border-radius:18px;
+  background:rgba(255,255,255,.97);
+  text-align:center;
+  box-shadow:0 18px 50px rgba(40,60,75,.15);
+}
+
+.spinner{
+  width:34px;
+  height:34px;
+  margin:0 auto 12px;
+  border:3px solid #dbe8ef;
+  border-top-color:#5d8daa;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+@keyframes spin{
+  to{
+    transform:rotate(360deg);
+  }
+}
+
+.loading-title{
+  color:#506d81;
+  font-size:13px;
+  font-weight:800;
+}
+
+.loading-sub{
+  margin-top:5px;
+  color:#98a5ae;
+  font-size:10px;
+}
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+header{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  margin-bottom:16px;
+}
+
+.school-name{
+  color:#8696a2;
+  font-size:12px;
+  font-weight:700;
+}
+
+h1{
+  margin:4px 0 0;
+  color:#27465e;
+  font-size:23px;
+}
+
+.header-actions,
+.admin-actions,
+.inline-tools{
+  display:flex;
+  gap:7px;
+}
+
+.btn{
+  padding:9px 12px;
+  border:1px solid #dbe5eb;
+  border-radius:10px;
+  background:white;
+  color:#536f82;
+}
+
+.btn:hover{
+  background:#f8fbfd;
+}
+
+.btn.primary{
+  background:#5e87a3;
+  border-color:#5e87a3;
+  color:white;
+}
+
+.btn.primary:hover{
+  background:#547c97;
+}
+
+.btn.danger{
+  background:#fff4f4;
+  border-color:#efd9d9;
+  color:#a96666;
+}
+
+/* =========================================================
+   ADMIN BAR
+   ========================================================= */
+
+.admin-bar{
+  display:none;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:13px;
+  padding:10px 13px;
+  border:1px solid #e6deef;
+  border-radius:12px;
+  background:
+    linear-gradient(
+      90deg,
+      #faf2ff,
+      #f1f7ff,
+      #f2faf5
+    );
+  color:#6a6371;
+  font-size:11px;
+}
+
+.admin-bar.show{
+  display:flex;
+}
+
+.admin-title{
+  font-weight:850;
+}
+
+/* =========================================================
+   HERO
+   ========================================================= */
+
+.hero{
+  display:grid;
+  grid-template-columns:1.35fr .65fr;
+  gap:28px;
+  padding:27px;
+  margin-bottom:14px;
+  border:1px solid #dce9f1;
+  border-radius:22px;
+  background:
+    linear-gradient(
+      135deg,
+      #e9f3ff,
+      #edf8f3
+    );
+}
+
+.date{
+  color:#698497;
+  font-size:13px;
+  font-weight:700;
+}
+
+.hello{
+  margin:7px 0;
+  color:#294e69;
+  font-size:25px;
+  font-weight:850;
+}
+
+.welcome-row{
+  display:flex;
+  align-items:flex-start;
+  gap:7px;
+}
+
+.welcome{
+  margin:0;
+  color:#718692;
+  line-height:1.7;
+  white-space:pre-line;
+}
+
+.weather-title,
+.quote-title{
+  margin-bottom:6px;
+  color:#6f8492;
+  font-size:11px;
+  font-weight:700;
+}
+
+.weather-main{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.weather-icon{
+  font-size:26px;
+}
+
+.weather-temp{
+  font-size:22px;
+  font-weight:850;
+}
+
+.weather-detail{
+  margin-top:5px;
+  color:#728794;
+  font-size:11px;
+}
+
+.quote{
+  margin-top:13px;
+  padding-top:12px;
+  border-top:1px solid rgba(100,130,150,.16);
+}
+
+.quote-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+}
+
+.quote-message{
+  font-size:13px;
+  font-weight:700;
+  line-height:1.55;
+}
+
+.quote-author{
+  margin-top:4px;
+  color:#8a99a3;
+  font-size:10px;
+}
+
+/* =========================================================
+   MAIN LAYOUT
+   ========================================================= */
+
+.main-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 165px;
+  gap:13px;
+  align-items:start;
+}
+
+.content-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(2,minmax(0,1fr));
+  gap:13px;
+}
+
+/* =========================================================
+   CARD
+   ========================================================= */
+
+.card{
+  padding:19px 20px;
+  background:white;
+  border:1px solid #e5edf2;
+  border-radius:17px;
+}
+
+.card-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:13px;
+  font-size:16px;
+  font-weight:800;
+}
+
+.card-title-left{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.count{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:29px;
+  height:22px;
+  padding:0 7px;
+  border-radius:999px;
+  background:#edf5fa;
+  color:#5e7f95;
+  font-size:10px;
+}
+
+.add-btn{
+  display:none;
+  padding:6px 9px;
+  border:1px solid #d9e9df;
+  border-radius:8px;
+  background:#eff8f3;
+  color:#567565;
+  font-size:10px;
+}
+
+.add-btn.show{
+  display:block;
+}
+
+/* =========================================================
+   ITEMS
+   ========================================================= */
+
+.item{
+  display:flex;
+  gap:10px;
+  padding:11px;
+  margin-bottom:7px;
+  border:1px solid #edf2f5;
+  border-radius:12px;
+  background:#fafcfd;
+}
+
+.item:last-child{
+  margin-bottom:0;
+}
+
+.item-icon{
+  width:34px;
+  min-width:34px;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  background:#edf5fa;
+}
+
+.item-body{
+  flex:1;
+  min-width:0;
+}
+
+.item-head{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+}
+
+.item-title{
+  color:#365165;
+  font-size:13px;
+  font-weight:750;
+}
+
+.item-meta{
+  margin-top:4px;
+  color:#8999a4;
+  font-size:10px;
+}
+
+.item-desc{
+  margin-top:5px;
+  color:#667c8c;
+  font-size:11px;
+  line-height:1.5;
+  white-space:pre-line;
+  overflow-wrap:anywhere;
+}
+
+.new-badge{
+  display:inline-flex;
+  margin-left:5px;
+  padding:2px 7px;
+  border-radius:999px;
+  background:#fff0f3;
+  color:#d54f61;
+  font-size:9px;
+  font-weight:900;
+}
+
+.repeat-badge{
+  display:inline-flex;
+  margin-left:5px;
+  padding:2px 7px;
+  border-radius:999px;
+  background:#eef7ff;
+  color:#5b7e96;
+  font-size:9px;
+  font-weight:800;
+}
+
+.mini{
+  min-width:28px;
+  height:28px;
+  padding:0 6px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  border:1px solid #dce7ed;
+  border-radius:8px;
+  background:white;
+  color:#627a8b;
+}
+
+.mini.delete{
+  background:#fff6f6;
+  color:#a86b6b;
+}
+
+.empty{
+  padding:20px;
+  text-align:center;
+  color:#9aa7af;
+  font-size:12px;
+}
+
+/* =========================================================
+   MEAL
+   ========================================================= */
+
+.meal-menu{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+}
+
+.meal-chip{
+  padding:7px 10px;
+  border:1px solid #e4ebef;
+  border-radius:10px;
+  background:#fafcfd;
+  font-size:11px;
+}
+
+.meal-calorie{
+  display:inline-block;
+  margin-top:10px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#fff4da;
+  color:#8a7041;
+  font-size:10px;
+}
+
+/* =========================================================
+   QUICK LINKS
+   ========================================================= */
+
+.quick-panel{
+  position:sticky;
+  top:14px;
+  padding:15px 11px;
+  background:white;
+  border:1px solid #e5edf2;
+  border-radius:17px;
+}
+
+.quick-panel-title{
+  margin-bottom:11px;
+  color:#344f63;
+  font-size:14px;
+  font-weight:800;
+}
+
+.quick-list{
+  display:flex;
+  flex-direction:column;
+  gap:7px;
+}
+
+.link-wrap{
+  position:relative;
+}
+
+.link-wrap.admin{
+  cursor:grab;
+}
+
+.link-wrap.dragging{
+  opacity:.35;
+}
+
+.quick-link{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  min-height:42px;
+  padding:8px 8px;
+  border:1px solid #e6edf1;
+  border-radius:10px;
+  background:#fbfcfd;
+  color:#405c70;
+  text-decoration:none;
+}
+
+.quick-link:hover{
+  background:#f2f7fa;
+}
+
+.quick-icon{
+  width:23px;
+  min-width:23px;
+  text-align:center;
+  font-size:17px;
+}
+
+.quick-name{
+  min-width:0;
+  color:#415f73;
+  font-size:10.5px;
+  font-weight:750;
+  line-height:1.35;
+  word-break:keep-all;
+}
+
+.drag-handle{
+  position:absolute;
+  left:3px;
+  top:3px;
+  z-index:15;
+  color:#849aa9;
+  font-size:9px;
+}
+
+.link-tools{
+  position:absolute;
+  right:3px;
+  top:3px;
+  z-index:15;
+  display:flex;
+  gap:2px;
+}
+
+.link-tools .mini{
+  width:21px;
+  min-width:21px;
+  height:21px;
+  padding:0;
+  font-size:9px;
+  border-radius:6px;
+}
+
+.quick-add{
+  display:none;
+  width:100%;
+  margin-top:9px;
+  padding:7px 5px;
+  border:1px solid #d9e9df;
+  border-radius:8px;
+  background:#eff8f3;
+  color:#567565;
+  font-size:9px;
+}
+
+.quick-add.show{
+  display:block;
+}
+
+/* =========================================================
+   MODAL
+   ========================================================= */
+
+.modal-bg{
+  position:fixed;
+  inset:0;
+  z-index:5000;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(35,50,62,.45);
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+}
+
+.modal-bg.show{
+  display:flex;
+}
+
+.modal{
+  width:100%;
+  max-width:680px;
+  max-height:88vh;
+  overflow-y:auto;
+  padding:24px;
+  border-radius:20px;
+  background:white;
+  box-shadow:
+    0 24px 70px
+    rgba(30,50,65,.2);
+}
+
+.modal h2{
+  margin:0 0 7px;
+  color:#355268;
+}
+
+.modal-desc{
+  margin-bottom:16px;
+  color:#84939e;
+  font-size:12px;
+}
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:7px;
+  margin-top:18px;
+}
+
+/* =========================================================
+   TEACHER
+   ========================================================= */
+
+.teacher-modal{
+  max-width:760px;
+}
+
+.teacher-list{
+  display:grid;
+  grid-template-columns:
+    repeat(3,1fr);
+  gap:8px;
+  max-height:58vh;
+  overflow-y:auto;
+}
+
+.teacher-item{
+  min-height:68px;
+  padding:10px 12px;
+  border:1px solid #e1e9ef;
+  border-radius:12px;
+  background:#fafcfd;
+  cursor:pointer;
+}
+
+.teacher-item:hover{
+  background:#f3f8fb;
+}
+
+.teacher-item.selected{
+  background:#eaf5fb;
+  border-color:#85a8bf;
+}
+
+.teacher-name{
+  font-size:13px;
+  font-weight:800;
+}
+
+.teacher-role{
+  margin-top:4px;
+  color:#8998a3;
+  font-size:10px;
+}
+
+/* =========================================================
+   FORM
+   ========================================================= */
+
+.form-grid{
+  display:grid;
+  grid-template-columns:
+    repeat(2,1fr);
+  gap:12px;
+}
+
+.field{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.field.full{
+  grid-column:1/-1;
+}
+
+.field label{
+  color:#607687;
+  font-size:11px;
+  font-weight:750;
+}
+
+.field input,
+.field select,
+.field textarea{
+  width:100%;
+  padding:10px 11px;
+  border:1px solid #dce6ec;
+  border-radius:10px;
+  background:white;
+  color:#40596b;
+}
+
+.field textarea{
+  min-height:100px;
+  resize:vertical;
+}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+.settings-modal{
+  max-width:1000px;
+}
+
+.settings-tabs{
+  display:flex;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.settings-tab.active{
+  background:#658ba5;
+  color:white;
+}
+
+.settings-toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:10px;
+}
+
+.table-wrap{
+  overflow-x:auto;
+  border:1px solid #e5edf1;
+  border-radius:12px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:11px;
+}
+
+th,
+td{
+  padding:9px;
+  border-bottom:1px solid #edf2f5;
+  text-align:left;
+  white-space:nowrap;
+}
+
+th{
+  background:#f2f8fb;
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+.toasts{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:9000;
+}
+
+.toast{
+  margin-top:7px;
+  padding:12px 14px;
+  border-radius:11px;
+  background:white;
+  border-left:4px solid #5c90b5;
+  box-shadow:
+    0 12px 32px
+    rgba(30,50,65,.15);
+  font-size:12px;
+}
+
+.toast.error{
+  border-left-color:#ce6262;
+}
+
+.toast.success{
+  border-left-color:#55a675;
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media(max-width:1100px){
+  .main-layout{
+    grid-template-columns:
+      minmax(0,1fr) 145px;
+  }
+}
+
+@media(max-width:900px){
+  .app{
+    width:100%;
+    padding:14px 13px 35px;
+  }
+
+  .hero{
+    grid-template-columns:1fr;
+  }
+
+  .main-layout{
+    grid-template-columns:1fr;
+  }
+
+  .quick-panel{
+    position:static;
+  }
+
+  .quick-list{
+    display:grid;
+    grid-template-columns:
+      repeat(4,minmax(0,1fr));
+  }
+}
+
+@media(max-width:720px){
+  .content-grid{
+    grid-template-columns:1fr;
+  }
+
+  .teacher-list{
+    grid-template-columns:
+      repeat(2,1fr);
+  }
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .field.full{
+    grid-column:auto;
+  }
+
+  .quick-list{
+    grid-template-columns:
+      repeat(2,minmax(0,1fr));
+  }
+}
+</style>
+</head>
+
+<body class="loading">
+
+<div
+  id="loadingScreen"
+  class="loading-screen"
+>
+  <div class="loading-box">
+    <div class="spinner"></div>
+
+    <div
+      id="loadingTitle"
+      class="loading-title"
+    >
+      불러오는 중...
+    </div>
+
+    <div class="loading-sub">
+      잠시만 기다려 주세요.
+    </div>
+  </div>
+</div>
+
+<div class="app">
+
+<header>
+  <div>
+    <div
+      id="schoolName"
+      class="school-name"
+    ></div>
+
+    <h1 id="appName"></h1>
+  </div>
+
+  <div class="header-actions">
+    <button
+      id="refreshBtn"
+      class="btn"
+    >
+      ↻ 새로고침
+    </button>
+
+    <button
+      id="teacherBtn"
+      class="btn"
+    >
+      👤
+    </button>
+
+    <button
+      id="adminLoginBtn"
+      class="btn"
+    >
+      ⚙️
+    </button>
+  </div>
+</header>
+
+<div
+  id="adminBar"
+  class="admin-bar"
+>
+  <div>
+    <span
+      id="adminTitle"
+      class="admin-title"
+    ></span>
+
+    <span
+      id="adminDescription"
+    ></span>
+  </div>
+
+  <div class="admin-actions">
+    <button
+      id="settingsBtn"
+      class="btn"
+      style="display:none;"
+    >
+      ⚙️ 설정
+    </button>
+
+    <button
+      id="adminExitBtn"
+      class="btn"
+    >
+      관리 종료
+    </button>
+  </div>
+</div>
+
+<section class="hero">
+
+  <div>
+    <div
+      id="todayDate"
+      class="date"
+    ></div>
+
+    <div
+      id="hello"
+      class="hello"
+    ></div>
+
+    <div class="welcome-row">
+      <p
+        id="welcome"
+        class="welcome"
+      ></p>
+
+      <button
+        id="welcomeEditBtn"
+        class="mini"
+        style="display:none;"
+      >
+        ✏️
+      </button>
+    </div>
+  </div>
+
+  <div>
+    <div class="weather-title">
+      오늘의 날씨
+    </div>
+
+    <div class="weather-main">
+      <span
+        id="weatherIcon"
+        class="weather-icon"
+      ></span>
+
+      <span
+        id="weatherTemp"
+        class="weather-temp"
+      ></span>
+
+      <span id="weatherPlace"></span>
+    </div>
+
+    <div
+      id="weatherDetail"
+      class="weather-detail"
+    ></div>
+
+    <div class="quote">
+      <div class="quote-head">
+        <div class="quote-title">
+          💬 오늘의 한마디
+        </div>
+
+        <div
+          id="quoteTools"
+          class="inline-tools"
+          style="display:none;"
+        >
+          <button
+            id="quoteAddBtn"
+            class="mini"
+          >
+            ＋
+          </button>
+
+          <button
+            id="quoteEditBtn"
+            class="mini"
+          >
+            ✏️
+          </button>
+
+          <button
+            id="quoteDeleteBtn"
+            class="mini delete"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+
+      <div
+        id="quoteMessage"
+        class="quote-message"
+      ></div>
+
+      <div
+        id="quoteAuthor"
+        class="quote-author"
+      ></div>
+    </div>
+  </div>
+
+</section>
+
+<div class="main-layout">
+
+  <div class="content-grid">
+
+    <section class="card">
+      <div class="card-title">
+        <div class="card-title-left">
+          <span>
+            📢 알립니다
+          </span>
+
+          <span
+            id="noticeCount"
+            class="count"
+          >
+            (0)
+          </span>
+        </div>
+
+        <button
+          id="noticeAddBtn"
+          class="add-btn"
+        >
+          + 공지 추가
+        </button>
+      </div>
+
+      <div id="noticeList"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">
+        <div class="card-title-left">
+          <span>
+            📅 오늘 일정
+          </span>
+
+          <span
+            id="scheduleCount"
+            class="count"
+          >
+            (0)
+          </span>
+        </div>
+      </div>
+
+      <div id="scheduleList"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">
+        <div class="card-title-left">
+          <span>
+            ✅ 오늘 해야 할 일
+          </span>
+
+          <span
+            id="taskCount"
+            class="count"
+          >
+            (0)
+          </span>
+        </div>
+
+        <button
+          id="taskAddBtn"
+          class="add-btn"
+        >
+          + 할 일 추가
+        </button>
+      </div>
+
+      <div id="taskList"></div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">
+        🍚 오늘의 급식
+      </div>
+
+      <div id="mealArea"></div>
+    </section>
+
+  </div>
+
+  <aside class="quick-panel">
+
+    <div class="quick-panel-title">
+      🚀 바로가기
+    </div>
+
+    <div
+      id="linkList"
+      class="quick-list"
+    ></div>
+
+    <button
+      id="linkAddBtn"
+      class="quick-add"
+    >
+      + 바로가기
+    </button>
+
+  </aside>
+
+</div>
+
+</div>
+
+<!-- TEACHER MODAL -->
+
+<div
+  id="teacherModal"
+  class="modal-bg"
+>
+  <div class="modal teacher-modal">
+
+    <h2>
+      👤 선생님 선택
+    </h2>
+
+    <div class="modal-desc">
+      이 기기에서 사용할 선생님을 선택해 주세요.
+    </div>
+
+    <div
+      id="teacherList"
+      class="teacher-list"
+    ></div>
+
+    <div class="modal-actions">
+
+      <button
+        id="teacherCancel"
+        class="btn"
+      >
+        취소
+      </button>
+
+      <button
+        id="teacherOk"
+        class="btn primary"
+      >
+        선택
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+
+<div
+  id="loginModal"
+  class="modal-bg"
+>
+  <div
+    class="modal"
+    style="max-width:420px;"
+  >
+
+    <h2>
+      🔐 관리자 로그인
+    </h2>
+
+    <div class="modal-desc">
+      관리자 비밀번호를 입력해 주세요.
+    </div>
+
+    <div class="field">
+      <label>
+        비밀번호
+      </label>
+
+      <input
+        id="adminPassword"
+        type="password"
+      >
+    </div>
+
+    <div class="modal-actions">
+
+      <button
+        id="loginCancel"
+        class="btn"
+      >
+        취소
+      </button>
+
+      <button
+        id="loginOk"
+        class="btn primary"
+      >
+        로그인
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- EDITOR MODAL -->
+
+<div
+  id="editorModal"
+  class="modal-bg"
+>
+  <div class="modal">
+
+    <h2 id="editorTitle"></h2>
+
+    <div
+      id="editorForm"
+      class="form-grid"
+    ></div>
+
+    <div class="modal-actions">
+
+      <button
+        id="editorCancel"
+        class="btn"
+      >
+        취소
+      </button>
+
+      <button
+        id="editorSave"
+        class="btn primary"
+      >
+        저장
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+
+<div
+  id="deleteModal"
+  class="modal-bg"
+>
+  <div
+    class="modal"
+    style="max-width:420px;"
+  >
+
+    <h2>
+      🗑️ 삭제 확인
+    </h2>
+
+    <div
+      id="deleteText"
+      class="modal-desc"
+    ></div>
+
+    <div class="modal-actions">
+
+      <button
+        id="deleteCancel"
+        class="btn"
+      >
+        취소
+      </button>
+
+      <button
+        id="deleteOk"
+        class="btn danger"
+      >
+        삭제
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- WELCOME MODAL -->
+
+<div
+  id="welcomeModal"
+  class="modal-bg"
+>
+  <div
+    class="modal"
+    style="max-width:600px;"
+  >
+
+    <h2>
+      💙 환영 문구 수정
+    </h2>
+
+    <div class="field">
+      <textarea
+        id="welcomeText"
+        style="min-height:160px;"
+      ></textarea>
+    </div>
+
+    <div class="modal-actions">
+
+      <button
+        id="welcomeCancel"
+        class="btn"
+      >
+        취소
+      </button>
+
+      <button
+        id="welcomeSave"
+        class="btn primary"
+      >
+        저장
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<!-- SETTINGS MODAL -->
+
+<div
+  id="settingsModal"
+  class="modal-bg"
+>
+  <div class="modal settings-modal">
+
+    <h2>
+      ⚙️ 총괄 관리자 설정
+    </h2>
+
+    <div class="modal-desc">
+      교사 관리와 기본 설정을 관리합니다.
+    </div>
+
+    <div class="settings-tabs">
+
+      <button
+        id="teachersTab"
+        class="btn settings-tab active"
+      >
+        👥 교사 관리
+      </button>
+
+      <button
+        id="settingsTab"
+        class="btn settings-tab"
+      >
+        ⚙️ 기본 설정
+      </button>
+
+    </div>
+
+    <div class="settings-toolbar">
+
+      <strong id="settingsTitle">
+        교사 관리
+      </strong>
+
+      <button
+        id="settingsAddBtn"
+        class="btn primary"
+      >
+        + 교사 추가
+      </button>
+
+    </div>
+
+    <div
+      id="settingsTable"
+      class="table-wrap"
+    ></div>
+
+    <div class="modal-actions">
+
+      <button
+        id="settingsClose"
+        class="btn"
+      >
+        닫기
+      </button>
+
+    </div>
+
+  </div>
+</div>
+
+<div
+  id="toasts"
+  class="toasts"
+></div>
+
+<script>
+/* GitHub Pages 연결 설정: GAS 재배포 시 기존 배포를 수정하면 주소가 유지됩니다. */
+const HUB_GAS_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzvQ4dw1hScEYMCh1Nvpdx0MZTMMs9CgctJhhyMfwZMfKQKPA-TfwesSDZoqB89NGSB/exec';
+
+const hubBridge = (() => {
+  const methods = new Set(['getPublicSettings', 'getTeacherList', 'getDashboardData',
+    'adminLogin', 'adminGetData', 'adminSaveRow', 'adminDeleteRow',
+    'adminUpdateWelcomeMessage', 'adminReorderRows']);
+  const pending = new Map();
+  let connection = null;
+  let peer = null;
+  let peerOrigin = '';
+  let frame = null;
+  let channel = '';
+  let sequence = 0;
+  let readyResolve = null;
+  const connectionError = 'GAS 연결을 확인해 주세요. 백엔드를 새 버전으로 배포했는지, 웹앱 접근 권한과 GitHub 주소 허용 설정이 맞는지 확인한 후 새로고침해 주세요.';
+
+  function isGoogleOrigin(origin) {
+    try {
+      const url = new URL(origin);
+      return url.protocol === 'https:' &&
+        (url.hostname === 'script.google.com' || url.hostname === 'script.googleusercontent.com' ||
+          url.hostname.endsWith('.script.googleusercontent.com') || url.hostname.endsWith('-script.googleusercontent.com'));
+    } catch (_) { return false; }
+  }
+
+  window.addEventListener('message', event => {
+    const data = event.data;
+    if (!data || data.protocol !== 'yulpo-hub-v1' || data.channel !== channel ||
+        !isGoogleOrigin(event.origin) || !event.source) return;
+    if (data.type === 'ready' && readyResolve) {
+      if (peer && (event.source !== peer || event.origin !== peerOrigin)) return;
+      peer = event.source;
+      peerOrigin = event.origin;
+      peer.postMessage({protocol: 'yulpo-hub-v1', channel, type: 'ack'}, peerOrigin);
+      readyResolve();
+      readyResolve = null;
+      return;
+    }
+    if (event.source !== peer || event.origin !== peerOrigin || data.type !== 'result') return;
+    const request = pending.get(data.id);
+    if (!request) return;
+    pending.delete(data.id);
+    clearTimeout(request.timer);
+    if (data.ok) request.resolve(data.result);
+    else request.reject(new Error(data.message || '요청을 처리하지 못했습니다.'));
+  });
+
+  function connect() {
+    if (connection) return connection;
+    connection = new Promise((resolve, reject) => {
+      if (location.protocol !== 'https:' || window.top !== window.self) {
+        reject(new Error('이 파일은 GitHub Pages의 HTTPS 주소에서 직접 열어 주세요.'));
+        return;
+      }
+      const url = new URL(HUB_GAS_WEB_APP_URL);
+      if (url.origin !== 'https://script.google.com' || !url.pathname.endsWith('/exec')) {
+        reject(new Error('index.html의 GAS 웹앱 배포 주소를 확인해 주세요.'));
+        return;
+      }
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+      channel = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+      url.searchParams.set('action', 'githubbridge');
+      url.searchParams.set('parentOrigin', location.origin);
+      url.searchParams.set('channel', channel);
+      const timer = setTimeout(() => {
+        readyResolve = null;
+        reject(new Error(connectionError));
+      }, 30000);
+      readyResolve = () => { clearTimeout(timer); resolve(); };
+      frame = document.createElement('iframe');
+      frame.title = 'GAS 연결';
+      frame.setAttribute('aria-hidden', 'true');
+      frame.tabIndex = -1;
+      frame.style.cssText = 'position:absolute;width:1px;height:1px;left:-9999px;border:0;';
+      frame.src = url.toString();
+      document.body.appendChild(frame);
+    }).catch(error => {
+      if (frame) frame.remove();
+      frame = null;
+      peer = null;
+      peerOrigin = '';
+      connection = null;
+      throw error;
+    });
+    return connection;
+  }
+
+  async function call(method, args) {
+    if (!methods.has(method)) throw new Error('지원하지 않는 요청입니다.');
+    await connect();
+    return new Promise((resolve, reject) => {
+      const id = channel + '-' + (++sequence);
+      const timer = setTimeout(() => {
+        pending.delete(id);
+        reject(new Error('응답 시간이 초과되었습니다. 저장 작업이었다면 반영 여부를 확인한 후 다시 시도해 주세요.'));
+      }, 60000);
+      pending.set(id, {resolve, reject, timer});
+      try {
+        peer.postMessage({protocol: 'yulpo-hub-v1', channel, type: 'call', id, method, args}, peerOrigin);
+      } catch (error) {
+        clearTimeout(timer);
+        pending.delete(id);
+        reject(error);
+      }
+    });
+  }
+
+  function runner(success, failure) {
+    return new Proxy({}, {
+      get(_, method) {
+        if (method === 'withSuccessHandler') return handler => runner(handler, failure);
+        if (method === 'withFailureHandler') return handler => runner(success, handler);
+        if (method === 'then') return undefined;
+        if (!methods.has(method)) return undefined;
+        return (...args) => {
+          call(method, args).then(result => {
+            if (typeof success === 'function') return success(result);
+          }).catch(error => {
+            if (typeof failure === 'function') failure(error);
+            else toast(error.message || 'GAS 연결 오류', 'error');
+          });
+        };
+      }
+    });
+  }
+  return {runner};
+})();
+
+function hubRun() {
+  // GAS에서 제공한 HTML에서는 기존 연결을 그대로 사용합니다.
+  if (window.google && window.google.script && window.google.script.run) return window.google.script.run;
+  return hubBridge.runner();
+}
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+const STORAGE_TEACHER =
+  'yulpo_teacherId';
+
+let teacherId =
+  localStorage.getItem(
+    STORAGE_TEACHER
+  ) || '';
+
+let selectedTeacherId = '';
+
+let teachers = [];
+
+let dashboard = null;
+
+let adminToken = '';
+
+let adminRole = '';
+
+let adminData = {};
+
+let editSheet = '';
+
+let editRecord = null;
+
+let deleteSheet = '';
+
+let deleteId = '';
+
+let currentSettingsTab =
+  'Teachers';
+
+let autoRefreshTimer = null;
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+document.addEventListener(
+  'DOMContentLoaded',
+  start
+);
+
+function start(){
+
+  if(teacherId){
+
+    loadDashboard({
+      showOverlay:true
+    });
+
+  }else{
+
+    loadTeachers(true);
+  }
+}
+
+
+/* =========================================================
+   LOADING
+   ========================================================= */
+
+function showLoading(
+  message='불러오는 중...'
+){
+
+  document.body
+    .classList
+    .add('loading');
+
+  document
+    .getElementById(
+      'loadingScreen'
+    )
+    .classList
+    .remove('hide');
+
+  document
+    .getElementById(
+      'loadingTitle'
+    )
+    .textContent =
+      message;
+}
+
+function hideLoading(){
+
+  document.body
+    .classList
+    .remove('loading');
+
+  document
+    .getElementById(
+      'loadingScreen'
+    )
+    .classList
+    .add('hide');
+
+  document
+    .getElementById(
+      'loadingTitle'
+    )
+    .textContent =
+      '불러오는 중...';
+}
+
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+
+function loadDashboard(
+  options={}
+){
+
+  const showOverlay =
+    options.showOverlay === true;
+
+  const successMessage =
+    options.successMessage || '';
+
+  const onFinish =
+    typeof options.onFinish ===
+    'function'
+      ? options.onFinish
+      : null;
+
+  if(!teacherId){
+
+    loadTeachers(true);
+
+    return;
+  }
+
+  if(showOverlay){
+
+    showLoading(
+      options.loadingMessage ||
+      '불러오는 중...'
+    );
+  }
+
+  hubRun()
+    .withSuccessHandler(
+      async function(result){
+
+        if(
+          !result ||
+          !result.success
+        ){
+
+          if(showOverlay){
+            hideLoading();
+          }
+
+          if(onFinish){
+            onFinish();
+          }
+
+          toast(
+            result &&
+            result.message
+              ? result.message
+              : '정보를 불러오지 못했습니다.',
+            'error'
+          );
+
+          return;
+        }
+
+        try{
+
+          result.schedules =
+            await loadExternalSchedule(
+              result
+                .settings
+                .externalScheduleUrl,
+              result.today.date
+            );
+
+          result.schedules =
+            sortSchedules(
+              result.schedules
+            );
+
+        }catch(error){
+
+          result.schedules = [];
+        }
+
+        dashboard = result;
+
+        renderDashboard();
+
+        setAutoRefresh(
+          result
+            .settings
+            .refreshMinutes || 5
+        );
+
+        if(showOverlay){
+          hideLoading();
+        }
+
+        if(onFinish){
+          onFinish();
+        }
+
+        if(successMessage){
+
+          toast(
+            successMessage,
+            'success'
+          );
+        }
+      }
+    )
+    .withFailureHandler(
+      function(error){
+
+        if(showOverlay){
+          hideLoading();
+        }
+
+        if(onFinish){
+          onFinish();
+        }
+
+        toast(
+          error &&
+          error.message
+            ? error.message
+            : '정보를 불러오지 못했습니다.',
+          'error'
+        );
+      }
+    )
+    .getDashboardData(
+      teacherId
+    );
+}
+
+
+/* =========================================================
+   RENDER DASHBOARD
+   ========================================================= */
+
+function renderDashboard(){
+
+  if(!dashboard){
+    return;
+  }
+
+  document.title =
+    dashboard
+      .settings
+      .appName || '';
+
+  text(
+    'schoolName',
+    dashboard
+      .settings
+      .schoolName
+  );
+
+  text(
+    'appName',
+    dashboard
+      .settings
+      .appName
+  );
+
+  text(
+    'todayDate',
+    dashboard.today.year +
+    '년 ' +
+    dashboard.today.month +
+    '월 ' +
+    dashboard.today.day +
+    '일 ' +
+    dashboard.today.dayOfWeek
+  );
+
+  text(
+    'hello',
+    getGreeting() +
+    ', ' +
+    getTeacherDisplayName(
+      dashboard.teacher
+    ) +
+    ' 👋'
+  );
+
+  text(
+    'welcome',
+    dashboard
+      .settings
+      .welcomeMessage || ''
+  );
+
+  renderWeather();
+
+  renderQuote();
+
+  renderNotices();
+
+  renderSchedules();
+
+  renderTasks();
+
+  renderMeal();
+
+  renderLinks();
+
+  updateAdminUi();
+}
+
+
+/* =========================================================
+   WEATHER
+   ========================================================= */
+
+function renderWeather(){
+
+  const item =
+    dashboard.weather || {};
+
+  text(
+    'weatherIcon',
+    item.icon || '🌤️'
+  );
+
+  text(
+    'weatherTemp',
+    item.available
+      ? Math.round(
+          Number(
+            item.temperature
+          )
+        ) + '°'
+      : ''
+  );
+
+  text(
+    'weatherPlace',
+    item.location || ''
+  );
+
+  const detail = [];
+
+  if(item.description){
+    detail.push(
+      item.description
+    );
+  }
+
+  if(
+    item.maxTemperature !==
+    undefined
+  ){
+
+    detail.push(
+      '최고 ' +
+      Math.round(
+        Number(
+          item.maxTemperature
+        )
+      ) +
+      '°'
+    );
+  }
+
+  if(
+    item.minTemperature !==
+    undefined
+  ){
+
+    detail.push(
+      '최저 ' +
+      Math.round(
+        Number(
+          item.minTemperature
+        )
+      ) +
+      '°'
+    );
+  }
+
+  if(
+    item.precipitationProbability !==
+    undefined
+  ){
+
+    detail.push(
+      '강수 ' +
+      item.precipitationProbability +
+      '%'
+    );
+  }
+
+  text(
+    'weatherDetail',
+    detail.join(' · ')
+  );
+}
+
+
+/* =========================================================
+   QUOTE
+   ========================================================= */
+
+function renderQuote(){
+
+  const item =
+    dashboard.encouragement || {};
+
+  text(
+    'quoteMessage',
+    item.message
+      ? '“' +
+        item.message +
+        '”'
+      : ''
+  );
+
+  text(
+    'quoteAuthor',
+    item.author
+      ? '— ' +
+        item.author
+      : ''
+  );
+
+  const hasItem =
+    Boolean(
+      item.encouragementId
+    );
+
+  document
+    .getElementById(
+      'quoteAddBtn'
+    )
+    .style.display =
+      adminRole === 'admin' &&
+      !hasItem
+        ? ''
+        : 'none';
+
+  document
+    .getElementById(
+      'quoteEditBtn'
+    )
+    .style.display =
+      adminRole === 'admin' &&
+      hasItem
+        ? ''
+        : 'none';
+
+  document
+    .getElementById(
+      'quoteDeleteBtn'
+    )
+    .style.display =
+      adminRole === 'admin' &&
+      hasItem
+        ? ''
+        : 'none';
+}
+
+
+/* =========================================================
+   NOTICES
+   ========================================================= */
+
+function renderNotices(){
+
+  const rows =
+    dashboard.notices || [];
+
+  text(
+    'noticeCount',
+    '(' +
+    rows.length +
+    ')'
+  );
+
+  const area =
+    document
+      .getElementById(
+        'noticeList'
+      );
+
+  if(!rows.length){
+
+    area.innerHTML =
+      empty(
+        '알림이 없습니다.'
+      );
+
+    return;
+  }
+
+  area.innerHTML =
+    rows.map(
+      (row,index) => `
+        <div class="item">
+
+          <div class="item-icon">
+            📌
+          </div>
+
+          <div class="item-body">
+
+            <div class="item-head">
+
+              <div class="item-title">
+
+                ${escapeHtml(row.title)}
+
+                ${
+                  row.isNew
+                    ? '<span class="new-badge">NEW</span>'
+                    : ''
+                }
+
+              </div>
+
+              ${
+                adminRole
+                  ? `
+                    <div class="inline-tools">
+
+                      <button
+                        class="mini"
+                        onclick="editNotice(${index})"
+                      >
+                        ✏️
+                      </button>
+
+                      <button
+                        class="mini delete"
+                        onclick="deleteNotice(${index})"
+                      >
+                        🗑️
+                      </button>
+
+                    </div>
+                  `
+                  : ''
+              }
+
+            </div>
+
+            ${
+              row.endDate
+                ? `
+                  <div class="item-meta">
+                    ~ ${escapeHtml(row.endDate)}
+                  </div>
+                `
+                : ''
+            }
+
+            ${
+              row.content
+                ? `
+                  <div class="item-desc">
+                    ${escapeHtml(row.content)}
+                  </div>
+                `
+                : ''
+            }
+
+          </div>
+        </div>
+      `
+    ).join('');
+}
+
+
+/* =========================================================
+   SCHEDULES
+   ========================================================= */
+
+function renderSchedules(){
+
+  const rows =
+    dashboard.schedules || [];
+
+  text(
+    'scheduleCount',
+    '(' +
+    rows.length +
+    ')'
+  );
+
+  document
+    .getElementById(
+      'scheduleList'
+    )
+    .innerHTML =
+      rows.length
+        ? rows.map(
+            row => `
+              <div class="item">
+
+                <div class="item-icon">
+                  🏫
+                </div>
+
+                <div class="item-body">
+
+                  <div class="item-title">
+                    ${escapeHtml(row.title || '')}
+                  </div>
+
+                  <div class="item-meta">
+                    ${
+                      [
+                        row.time,
+                        row.location,
+                        row.target
+                      ]
+                        .filter(Boolean)
+                        .map(escapeHtml)
+                        .join(' · ')
+                    }
+                  </div>
+
+                </div>
+              </div>
+            `
+          ).join('')
+        : empty(
+            '오늘 일정이 없습니다.'
+          );
+}
+
+
+/* =========================================================
+   TASKS
+   ========================================================= */
+
+function renderTasks(){
+
+  const rows =
+    dashboard.tasks || [];
+
+  text(
+    'taskCount',
+    '(' +
+    rows.length +
+    ')'
+  );
+
+  const area =
+    document
+      .getElementById(
+        'taskList'
+      );
+
+  if(!rows.length){
+
+    area.innerHTML =
+      empty(
+        '오늘 안내할 업무가 없습니다. 👍'
+      );
+
+    return;
+  }
+
+  area.innerHTML =
+    rows.map(
+      (row,index) => {
+
+        const meta = [];
+
+        if(
+          row.startDate &&
+          row.endDate
+        ){
+
+          if(
+            row.startDate ===
+            row.endDate
+          ){
+
+            meta.push(
+              row.startDate
+            );
+
+          }else{
+
+            meta.push(
+              row.startDate +
+              ' ~ ' +
+              row.endDate
+            );
+          }
+
+        }else if(
+          row.startDate
+        ){
+
+          meta.push(
+            row.startDate +
+            '부터'
+          );
+
+        }else if(
+          row.endDate
+        ){
+
+          meta.push(
+            row.endDate +
+            '까지'
+          );
+        }
+
+        if(row.dueDate){
+
+          meta.push(
+            '마감 ' +
+            row.dueDate
+          );
+        }
+
+        return `
+          <div class="item">
+
+            <div class="item-icon">
+              ✅
+            </div>
+
+            <div class="item-body">
+
+              <div class="item-head">
+
+                <div class="item-title">
+
+                  ${escapeHtml(row.title)}
+
+                  ${
+                    row.repeatType &&
+                    row.repeatType !==
+                    'NONE'
+                      ? '<span class="repeat-badge">' +
+                        escapeHtml(
+                          row.repeatLabel
+                        ) +
+                        '</span>'
+                      : ''
+                  }
+
+                </div>
+
+                ${
+                  adminRole
+                    ? `
+                      <div class="inline-tools">
+
+                        <button
+                          class="mini"
+                          onclick="editTask(${index})"
+                        >
+                          ✏️
+                        </button>
+
+                        <button
+                          class="mini delete"
+                          onclick="deleteTask(${index})"
+                        >
+                          🗑️
+                        </button>
+
+                      </div>
+                    `
+                    : ''
+                }
+
+              </div>
+
+              ${
+                meta.length
+                  ? `
+                    <div class="item-meta">
+                      ${escapeHtml(meta.join(' · '))}
+                    </div>
+                  `
+                  : ''
+              }
+
+              ${
+                row.description
+                  ? `
+                    <div class="item-desc">
+                      ${escapeHtml(row.description)}
+                    </div>
+                  `
+                  : ''
+              }
+
+            </div>
+          </div>
+        `;
+      }
+    ).join('');
+}
+
+
+/* =========================================================
+   MEAL
+   ========================================================= */
+
+function renderMeal(){
+
+  const meal =
+    dashboard.meal || {};
+
+  const area =
+    document
+      .getElementById(
+        'mealArea'
+      );
+
+  if(
+    !meal.available ||
+    !Array.isArray(
+      meal.menu
+    ) ||
+    !meal.menu.length
+  ){
+
+    area.innerHTML =
+      empty(
+        meal.message ||
+        '급식 정보가 없습니다.'
+      );
+
+    return;
+  }
+
+  area.innerHTML = `
+    <div class="meal-menu">
+
+      ${
+        meal.menu
+          .map(
+            item => `
+              <span class="meal-chip">
+                ${escapeHtml(item)}
+              </span>
+            `
+          )
+          .join('')
+      }
+
+    </div>
+
+    ${
+      meal.calorie
+        ? `
+          <div class="meal-calorie">
+            🔥 ${escapeHtml(meal.calorie)}
+          </div>
+        `
+        : ''
+    }
+  `;
+}
+
+
+/* =========================================================
+   LINKS
+   ========================================================= */
+
+function renderLinks(){
+
+  const rows =
+    dashboard.links || [];
+
+  const area =
+    document
+      .getElementById(
+        'linkList'
+      );
+
+  area.innerHTML = '';
+
+  rows.forEach(
+    (row,index) => {
+
+      const wrapper =
+        document.createElement(
+          'div'
+        );
+
+      wrapper.className =
+        'link-wrap' +
+        (
+          adminRole === 'admin'
+            ? ' admin'
+            : ''
+        );
+
+      wrapper.dataset.id =
+        row.linkId;
+
+      wrapper.innerHTML = `
+        <a
+          href="${escapeAttr(row.url || '#')}"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="quick-link"
+        >
+
+          <div class="quick-icon">
+            ${escapeHtml(row.icon || '🔗')}
+          </div>
+
+          <div class="quick-name">
+            ${escapeHtml(row.name || '')}
+          </div>
+
+        </a>
+      `;
+
+      if(
+        adminRole === 'admin'
+      ){
+
+        wrapper.draggable = true;
+
+        const grip =
+          document.createElement(
+            'span'
+          );
+
+        grip.className =
+          'drag-handle';
+
+        grip.textContent =
+          '☰';
+
+        wrapper.appendChild(
+          grip
+        );
+
+        const tools =
+          document.createElement(
+            'div'
+          );
+
+        tools.className =
+          'link-tools';
+
+        tools.innerHTML = `
+          <button class="mini">
+            ✏️
+          </button>
+
+          <button class="mini delete">
+            🗑️
+          </button>
+        `;
+
+        tools.children[0]
+          .onclick =
+            function(event){
+
+              event.preventDefault();
+
+              event.stopPropagation();
+
+              editLink(index);
+            };
+
+        tools.children[1]
+          .onclick =
+            function(event){
+
+              event.preventDefault();
+
+              event.stopPropagation();
+
+              deleteLink(index);
+            };
+
+        wrapper.appendChild(
+          tools
+        );
+
+        wrapper.addEventListener(
+          'dragstart',
+          function(){
+
+            wrapper
+              .classList
+              .add('dragging');
+          }
+        );
+
+        wrapper.addEventListener(
+          'dragend',
+          function(){
+
+            wrapper
+              .classList
+              .remove('dragging');
+
+            saveLinkOrder();
+          }
+        );
+
+        wrapper.addEventListener(
+          'dragover',
+          function(event){
+
+            event.preventDefault();
+
+            const dragging =
+              area.querySelector(
+                '.dragging'
+              );
+
+            if(
+              !dragging ||
+              dragging === wrapper
+            ){
+              return;
+            }
+
+            const rect =
+              wrapper
+                .getBoundingClientRect();
+
+            const before =
+              event.clientY <
+              rect.top +
+              rect.height / 2;
+
+            area.insertBefore(
+              dragging,
+              before
+                ? wrapper
+                : wrapper.nextSibling
+            );
+          }
+        );
+      }
+
+      area.appendChild(
+        wrapper
+      );
+    }
+  );
+}
+
+
+/* =========================================================
+   EXTERNAL SCHEDULE
+   ========================================================= */
+
+function loadExternalSchedule(
+  url,
+  date
+){
+
+  return new Promise(
+    (resolve,reject) => {
+
+      if(!url){
+
+        resolve([]);
+
+        return;
+      }
+
+      const callback =
+        '__yulpoSchedule_' +
+        Date.now() +
+        '_' +
+        Math.floor(
+          Math.random() *
+          100000
+        );
+
+      const script =
+        document.createElement(
+          'script'
+        );
+
+      let done = false;
+
+      const timer =
+        setTimeout(
+          function(){
+
+            if(done){
+              return;
+            }
+
+            done = true;
+
+            cleanup();
+
+            reject(
+              new Error(
+                '일정 조회 시간 초과'
+              )
+            );
+          },
+          12000
+        );
+
+      function cleanup(){
+
+        clearTimeout(timer);
+
+        try{
+          delete window[
+            callback
+          ];
+        }catch(error){}
+
+        script.remove();
+      }
+
+      window[
+        callback
+      ] =
+        function(data){
+
+          if(done){
+            return;
+          }
+
+          done = true;
+
+          cleanup();
+
+          if(
+            data &&
+            data.success &&
+            Array.isArray(
+              data.events
+            )
+          ){
+
+            resolve(
+              data.events
+            );
+
+          }else{
+
+            resolve([]);
+          }
+        };
+
+      const query =
+        new URLSearchParams({
+          action:'date',
+          date:date,
+          callback:callback,
+          _:Date.now()
+        });
+
+      script.src =
+        url +
+        (
+          url.includes('?')
+            ? '&'
+            : '?'
+        ) +
+        query.toString();
+
+      script.onerror =
+        function(){
+
+          if(done){
+            return;
+          }
+
+          done = true;
+
+          cleanup();
+
+          reject(
+            new Error(
+              '일정 조회 실패'
+            )
+          );
+        };
+
+      document.head
+        .appendChild(
+          script
+        );
+    }
+  );
+}
+
+function sortSchedules(rows){
+
+  return (
+    Array.isArray(rows)
+      ? rows.slice()
+      : []
+  ).sort(
+    function(a,b){
+
+      return (
+        parseScheduleTime(
+          a.time
+        ) -
+        parseScheduleTime(
+          b.time
+        )
+      );
+    }
+  );
+}
+
+function parseScheduleTime(value){
+
+  const textValue =
+    String(
+      value || ''
+    );
+
+  const match =
+    textValue.match(
+      /(\d{1,2}):(\d{2})/
+    );
+
+  if(!match){
+    return 99999;
+  }
+
+  return (
+    Number(match[1]) *
+    60 +
+    Number(match[2])
+  );
+}
+
+
+/* =========================================================
+   ADMIN LOGIN
+   ========================================================= */
+
+function openAdminLogin(){
+
+  document
+    .getElementById(
+      'adminPassword'
+    )
+    .value = '';
+
+  showModal(
+    'loginModal'
+  );
+
+  setTimeout(
+    function(){
+
+      document
+        .getElementById(
+          'adminPassword'
+        )
+        .focus();
+
+    },
+    80
+  );
+}
+
+function doAdminLogin(){
+
+  const password =
+    document
+      .getElementById(
+        'adminPassword'
+      )
+      .value;
+
+  const button =
+    document
+      .getElementById(
+        'loginOk'
+      );
+
+  if(button.disabled){
+    return;
+  }
+
+  button.disabled = true;
+
+  button.textContent =
+    '로그인 중...';
+
+  hubRun()
+    .withSuccessHandler(
+      function(result){
+
+        button.disabled = false;
+
+        button.textContent =
+          '로그인';
+
+        if(
+          !result ||
+          !result.success
+        ){
+
+          toast(
+            result &&
+            result.message
+              ? result.message
+              : '로그인하지 못했습니다.',
+            'error'
+          );
+
+          return;
+        }
+
+        adminToken =
+          result.token;
+
+        adminRole =
+          result.role;
+
+        hideModal(
+          'loginModal'
+        );
+
+        loadAdminData(
+          function(){
+
+            renderDashboard();
+
+            toast(
+              result.roleName +
+              '로 로그인했습니다.',
+              'success'
+            );
+          }
+        );
+      }
+    )
+    .withFailureHandler(
+      function(error){
+
+        button.disabled = false;
+
+        button.textContent =
+          '로그인';
+
+        toast(
+          error &&
+          error.message
+            ? error.message
+            : '로그인 중 오류가 발생했습니다.',
+          'error'
+        );
+      }
+    )
+    .adminLogin(
+      password
+    );
+}
+
+function loadAdminData(
+  callback
+){
+
+  hubRun()
+    .withSuccessHandler(
+      function(result){
+
+        adminData =
+          result.data || {};
+
+        if(callback){
+          callback();
+        }
+      }
+    )
+    .withFailureHandler(
+      function(error){
+
+        toast(
+          error &&
+          error.message
+            ? error.message
+            : '관리자 데이터를 불러오지 못했습니다.',
+          'error'
+        );
+      }
+    )
+    .adminGetData(
+      adminToken
+    );
+}
+
+
+/* =========================================================
+   ADMIN UI
+   ========================================================= */
+
+function updateAdminUi(){
+
+  const active =
+    Boolean(
+      adminRole
+    );
+
+  document
+    .getElementById(
+      'adminBar'
+    )
+    .classList
+    .toggle(
+      'show',
+      active
+    );
+
+  document
+    .getElementById(
+      'adminLoginBtn'
+    )
+    .style.display =
+      active
+        ? 'none'
+        : '';
+
+  document
+    .getElementById(
+      'noticeAddBtn'
+    )
+    .classList
+    .toggle(
+      'show',
+      active
+    );
+
+  document
+    .getElementById(
+      'taskAddBtn'
+    )
+    .classList
+    .toggle(
+      'show',
+      active
+    );
+
+  document
+    .getElementById(
+      'welcomeEditBtn'
+    )
+    .style.display =
+      active
+        ? ''
+        : 'none';
+
+  document
+    .getElementById(
+      'quoteTools'
+    )
+    .style.display =
+      adminRole === 'admin'
+        ? 'flex'
+        : 'none';
+
+  document
+    .getElementById(
+      'linkAddBtn'
+    )
+    .classList
+    .toggle(
+      'show',
+      adminRole === 'admin'
+    );
+
+  document
+    .getElementById(
+      'settingsBtn'
+    )
+    .style.display =
+      adminRole === 'admin'
+        ? ''
+        : 'none';
+
+  if(
+    adminRole === 'admin'
+  ){
+
+    text(
+      'adminTitle',
+      '🛠️ 총괄 관리자 모드'
+    );
+
+    text(
+      'adminDescription',
+      ' · 공지, 할 일, 환영 문구, 오늘의 한마디, 바로가기를 관리할 수 있습니다.'
+    );
+
+  }else if(
+    adminRole === 'user'
+  ){
+
+    text(
+      'adminTitle',
+      '✏️ 일반 관리자 모드'
+    );
+
+    text(
+      'adminDescription',
+      ' · 공지, 할 일, 환영 문구를 관리할 수 있습니다.'
+    );
+  }
+}
+
+function exitAdminMode(){
+
+  adminToken = '';
+
+  adminRole = '';
+
+  adminData = {};
+
+  renderDashboard();
+}
+
+
+/* =========================================================
+   NOTICE ADMIN
+   ========================================================= */
+
+function addNotice(){
+
+  openEditor(
+    'Notices',
+    {
+      title:'',
+      content:'',
+      startDate:
+        dashboard.today.date,
+      endDate:'',
+      target:'전체',
+      priority:'일반',
+      url:'',
+      useYn:'Y'
+    }
+  );
+}
+
+function editNotice(index){
+
+  const item =
+    dashboard
+      .notices[index];
+
+  openEditor(
+    'Notices',
+    findAdminRow(
+      'Notices',
+      'noticeId',
+      item.noticeId
+    ) || item
+  );
+}
+
+function deleteNotice(index){
+
+  const item =
+    dashboard
+      .notices[index];
+
+  askDelete(
+    'Notices',
+    item.noticeId,
+    '이 공지를 삭제하시겠습니까?'
+  );
+}
+
+
+/* =========================================================
+   TASK ADMIN
+   ========================================================= */
+
+function addTask(){
+
+  openEditor(
+    'Tasks',
+    {
+      title:'',
+      description:'',
+      startDate:
+        dashboard.today.date,
+      endDate:
+        dashboard.today.date,
+      repeatType:'NONE',
+      dueDate:'',
+      target:'전체',
+      priority:'일반',
+      url:'',
+      completedYn:'N',
+      useYn:'Y'
+    }
+  );
+}
+
+function editTask(index){
+
+  const item =
+    dashboard
+      .tasks[index];
+
+  openEditor(
+    'Tasks',
+    findAdminRow(
+      'Tasks',
+      'taskId',
+      item.taskId
+    ) || item
+  );
+}
+
+function deleteTask(index){
+
+  const item =
+    dashboard
+      .tasks[index];
+
+  askDelete(
+    'Tasks',
+    item.taskId,
+    '이 할 일을 삭제하시겠습니까?'
+  );
+}
+
+
+/* =========================================================
+   QUOTE ADMIN
+   ========================================================= */
+
+function addQuote(){
+
+  if(
+    adminRole !== 'admin'
+  ){
+    return;
+  }
+
+  openEditor(
+    'Encouragements',
+    {
+      message:'',
+      author:'',
+      useYn:'Y'
+    }
+  );
+}
+
+function editQuote(){
+
+  if(
+    adminRole !== 'admin'
+  ){
+    return;
+  }
+
+  const item =
+    dashboard.encouragement;
+
+  if(
+    !item ||
+    !item.encouragementId
+  ){
+
+    addQuote();
+
+    return;
+  }
+
+  openEditor(
+    'Encouragements',
+    findAdminRow(
+      'Encouragements',
+      'encouragementId',
+      item.encouragementId
+    ) || item
+  );
+}
+
+function deleteQuote(){
+
+  if(
+    adminRole !== 'admin'
+  ){
+    return;
+  }
+
+  const item =
+    dashboard.encouragement;
+
+  if(
+    !item ||
+    !item.encouragementId
+  ){
+    return;
+  }
+
+  askDelete(
+    'Encouragements',
+    item.encouragementId,
+    '오늘의 한마디를 삭제하시겠습니까?'
+  );
+}
+
+
+/* =========================================================
+   LINK ADMIN
+   ========================================================= */
+
+function addLink(){
+
+  if(
+    adminRole !== 'admin'
+  ){
+    return;
+  }
+
+  openEditor(
+    'Links',
+    {
+      name:'',
+      category:'',
+      url:'',
+      icon:'🔗',
+      target:'전체',
+      useYn:'Y'
+    }
+  );
+}
+
+function editLink(index){
+
+  if(
+    adminRole !== 'admin'
+  ){
+    return;
+  }
+
+  const item =
+    dashboard
+      .links[index];
+
+  openEditor(
+    'Links',
+    findAdminRow(
+      'Links',
+      'linkId',
+      item.linkId
+    ) || item
+  );
+}
+
+function deleteLink(index){
+
+  if(
+    adminRole !== 'admin'
+  ){
+    return;
+  }
+
+  const item =
+    dashboard
+      .links[index];
+
+  askDelete(
+    'Links',
+    item.linkId,
+    '이 바로가기를 삭제하시겠습니까?'
+  );
+}
+
+function saveLinkOrder(){
+
+  if(
+    adminRole !== 'admin'
+  ){
+    return;
+  }
+
+  const ids =
+    Array.from(
+      document.querySelectorAll(
+        '#linkList .link-wrap'
+      )
+    )
+      .map(
+        element =>
+          element.dataset.id
+      )
+      .filter(Boolean);
+
+  hubRun()
+    .withSuccessHandler(
+      function(result){
+
+        loadAdminData(
+          function(){
+
+            loadDashboard({
+              showOverlay:false
+            });
+          }
+        );
+
+        toast(
+          result.message ||
+          '바로가기 순서를 저장했습니다.',
+          'success'
+        );
+      }
+    )
+    .withFailureHandler(
+      function(error){
+
+        toast(
+          error &&
+          error.message
+            ? error.message
+            : '순서를 저장하지 못했습니다.',
+          'error'
+        );
+      }
+    )
+    .adminReorderRows(
+      adminToken,
+      'Links',
+      ids
+    );
+}
+
+
+/* =========================================================
+   WELCOME
+   ========================================================= */
+
+function editWelcome(){
+
+  document
+    .getElementById(
+      'welcomeText'
+    )
+    .value =
+      dashboard
+        .settings
+        .welcomeMessage || '';
+
+  showModal(
+    'welcomeModal'
+  );
+}
+
+function saveWelcome(){
+
+  const value =
+    document
+      .getElementById(
+        'welcomeText'
+      )
+      .value;
+
+  const button =
+    document
+      .getElementById(
+        'welcomeSave'
+      );
+
+  if(button.disabled){
+    return;
+  }
+
+  button.disabled = true;
+
+  button.textContent =
+    '저장 중...';
+
+  hideModal(
+    'welcomeModal'
+  );
+
+  showLoading(
+    '저장하는 중...'
+  );
+
+  hubRun()
+    .withSuccessHandler(
+      function(result){
+
+        hubRun()
+          .withSuccessHandler(
+            async function(dashResult){
+
+              if(
+                !dashResult ||
+                !dashResult.success
+              ){
+
+                hideLoading();
+
+                button.disabled = false;
+
+                button.textContent =
+                  '저장';
+
+                toast(
+                  '저장 후 화면을 갱신하지 못했습니다.',
+                  'error'
+                );
+
+                return;
+              }
+
+              try{
+
+                dashResult.schedules =
+                  await loadExternalSchedule(
+                    dashResult
+                      .settings
+                      .externalScheduleUrl,
+                    dashResult.today.date
+                  );
+
+                dashResult.schedules =
+                  sortSchedules(
+                    dashResult.schedules
+                  );
+
+              }catch(error){
+
+                dashResult.schedules = [];
+              }
+
+              dashboard =
+                dashResult;
+
+              renderDashboard();
+
+              hideLoading();
+
+              button.disabled = false;
+
+              button.textContent =
+                '저장';
+
+              toast(
+                result.message ||
+                '환영 문구를 저장했습니다.',
+                'success'
+              );
+            }
+          )
+          .withFailureHandler(
+            function(error){
+
+              hideLoading();
+
+              button.disabled = false;
+
+              button.textContent =
+                '저장';
+
+              toast(
+                error &&
+                error.message
+                  ? error.message
+                  : '화면 갱신에 실패했습니다.',
+                'error'
+              );
+            }
+          )
+          .getDashboardData(
+            teacherId
+          );
+      }
+    )
+    .withFailureHandler(
+      function(error){
+
+        hideLoading();
+
+        button.disabled = false;
+
+        button.textContent =
+          '저장';
+
+        showModal(
+          'welcomeModal'
+        );
+
+        toast(
+          error &&
+          error.message
+            ? error.message
+            : '저장 중 오류가 발생했습니다.',
+          'error'
+        );
+      }
+    )
+    .adminUpdateWelcomeMessage(
+      adminToken,
+      value
+    );
+}
+
+
+/* =========================================================
+   EDITOR
+   ========================================================= */
+
+function openEditor(
+  sheet,
+  record
+){
+
+  editSheet = sheet;
+
+  editRecord =
+    Object.assign(
+      {},
+      record || {}
+    );
+
+  const fields = {
+
+    Notices:[
+      'title',
+      'content',
+      'startDate',
+      'endDate',
+      'target',
+      'priority',
+      'url',
+      'useYn'
+    ],
+
+    Tasks:[
+      'title',
+      'description',
+      'startDate',
+      'endDate',
+      'repeatType',
+      'dueDate',
+      'target',
+      'priority',
+      'url',
+      'completedYn',
+      'useYn'
+    ],
+
+    Encouragements:[
+      'message',
+      'author',
+      'useYn'
+    ],
+
+    Links:[
+      'name',
+      'category',
+      'url',
+      'icon',
+      'target',
+      'useYn'
+    ],
+
+    Teachers:[
+      'name',
+      'role',
+      'grade',
+      'class',
+      'department',
+      'useYn'
+    ],
+
+    Settings:[
+      'key',
+      'value',
+      'description'
+    ]
+  };
+
+  const form =
+    document
+      .getElementById(
+        'editorForm'
+      );
+
+  form.innerHTML = '';
+
+  (
+    fields[sheet] || []
+  )
+    .forEach(
+      function(field){
+
+        const wrapper =
+          document.createElement(
+            'div'
+          );
+
+        wrapper.className =
+          'field' +
+          (
+            [
+              'content',
+              'description',
+              'message'
+            ].includes(field)
+              ? ' full'
+              : ''
+          );
+
+        const label =
+          document.createElement(
+            'label'
+          );
+
+        label.textContent =
+          getFieldLabel(field);
+
+        wrapper.appendChild(
+          label
+        );
+
+        let control;
+
+        /* 사용 여부 */
+
+        if(
+          field === 'useYn'
+        ){
+
+          control =
+            document.createElement(
+              'select'
+            );
+
+          control.dataset.field =
+            field;
+
+          control.innerHTML = `
+            <option value="Y">
+              사용
+            </option>
+
+            <option value="N">
+              사용 안 함
+            </option>
+          `;
+
+          control.value =
+            editRecord[field] ||
+            'Y';
+
+        /* 처리 상태 */
+
+        }else if(
+          field === 'completedYn'
+        ){
+
+          control =
+            document.createElement(
+              'select'
+            );
+
+          control.dataset.field =
+            field;
+
+          control.innerHTML = `
+            <option value="N">
+              진행 중
+            </option>
+
+            <option value="Y">
+              완료
+            </option>
+          `;
+
+          control.value =
+            editRecord[field] ||
+            'N';
+
+        /* 긴 내용 */
+
+        }else if(
+          [
+            'content',
+            'description',
+            'message'
+          ].includes(field)
+        ){
+
+          control =
+            document.createElement(
+              'textarea'
+            );
+
+          control.dataset.field =
+            field;
+
+          control.value =
+            editRecord[field] || '';
+
+        /* 중요도 */
+
+        }else if(
+          field === 'priority'
+        ){
+
+          control =
+            document.createElement(
+              'select'
+            );
+
+          control.dataset.field =
+            field;
+
+          control.innerHTML = `
+            <option value="일반">
+              일반
+            </option>
+
+            <option value="중요">
+              중요
+            </option>
+
+            <option value="긴급">
+              긴급
+            </option>
+          `;
+
+          control.value =
+            editRecord[field] ||
+            '일반';
+
+        /* 반복 */
+
+        }else if(
+          field === 'repeatType'
+        ){
+
+          control =
+            document.createElement(
+              'select'
+            );
+
+          control.dataset.field =
+            field;
+
+          control.innerHTML = `
+            <option value="NONE">
+              기간 내 매일
+            </option>
+
+            <option value="DAILY">
+              매일
+            </option>
+
+            <option value="WEEKDAY">
+              평일마다
+            </option>
+
+            <option value="MON">
+              매주 월요일
+            </option>
+
+            <option value="TUE">
+              매주 화요일
+            </option>
+
+            <option value="WED">
+              매주 수요일
+            </option>
+
+            <option value="THU">
+              매주 목요일
+            </option>
+
+            <option value="FRI">
+              매주 금요일
+            </option>
+
+            <option value="SAT">
+              매주 토요일
+            </option>
+
+            <option value="SUN">
+              매주 일요일
+            </option>
+          `;
+
+          control.value =
+            String(
+              editRecord[field] ||
+              'NONE'
+            ).toUpperCase();
+
+        /* 대상 */
+
+        }else if(
+          field === 'target'
+        ){
+
+          control =
+            document.createElement(
+              'input'
+            );
+
+          control.dataset.field =
+            field;
+
+          control.value =
+            editRecord[field] ||
+            '전체';
+
+          control.placeholder =
+            '기본값: 전체';
+
+        /* 일반 입력 */
+
+        }else{
+
+          control =
+            document.createElement(
+              'input'
+            );
+
+          control.dataset.field =
+            field;
+
+          control.type =
+            [
+              'startDate',
+              'endDate',
+              'dueDate'
+            ].includes(field)
+              ? 'date'
+              : 'text';
+
+          if(
+            sheet === 'Settings' &&
+            field === 'value' &&
+            [
+              'adminPassword',
+              'userPassword',
+              'neisApiKey'
+            ].includes(
+              editRecord.key
+            )
+          ){
+
+            control.type =
+              'password';
+
+            control.value = '';
+
+            control.placeholder =
+              '변경할 때만 입력';
+
+          }else{
+
+            control.value =
+              editRecord[field] || '';
+          }
+
+          if(
+            sheet === 'Settings' &&
+            field === 'key' &&
+            editRecord.key
+          ){
+
+            control.readOnly =
+              true;
+          }
+        }
+
+        wrapper.appendChild(
+          control
+        );
+
+        form.appendChild(
+          wrapper
+        );
+      }
+    );
+
+  text(
+    'editorTitle',
+    getSheetLabel(sheet) +
+    (
+      editRecord[
+        getPrimaryKey(sheet)
+      ]
+        ? ' 수정'
+        : ' 추가'
+    )
+  );
+
+  showModal(
+    'editorModal'
+  );
+}
+
+
+/* =========================================================
+   SAVE
+   ========================================================= */
+
+function saveEditor(){
+
+  const record =
+    Object.assign(
+      {},
+      editRecord || {}
+    );
+
+  document
+    .querySelectorAll(
+      '#editorForm [data-field]'
+    )
+    .forEach(
+      function(control){
+
+        const field =
+          control.dataset.field;
+
+        record[field] =
+          control.value;
+      }
+    );
+
+  if(
+    (
+      editSheet === 'Notices' ||
+      editSheet === 'Tasks'
+    ) &&
+    !String(
+      record.target || ''
+    ).trim()
+  ){
+
+    record.target =
+      '전체';
+  }
+
+  if(
+    editSheet === 'Tasks' &&
+    !record.repeatType
+  ){
+
+    record.repeatType =
+      'NONE';
+  }
+
+  if(
+    !record.useYn
+  ){
+
+    record.useYn =
+      'Y';
+  }
+
+  if(
+    editSheet === 'Tasks' &&
+    !record.completedYn
+  ){
+
+    record.completedYn =
+      'N';
+  }
+
+  const button =
+    document
+      .getElementById(
+        'editorSave'
+      );
+
+  if(button.disabled){
+    return;
+  }
+
+  button.disabled = true;
+
+  button.textContent =
+    '저장 중...';
+
+  hideModal(
+    'editorModal'
+  );
+
+  showLoading(
+    '저장하는 중...'
+  );
+
+  hubRun()
+    .withSuccessHandler(
+      function(result){
+
+        hubRun()
+          .withSuccessHandler(
+            function(adminResult){
+
+              adminData =
+                adminResult.data || {};
+
+              hubRun()
+                .withSuccessHandler(
+                  async function(dashResult){
+
+                    if(
+                      !dashResult ||
+                      !dashResult.success
+                    ){
+
+                      hideLoading();
+
+                      button.disabled = false;
+
+                      button.textContent =
+                        '저장';
+
+                      toast(
+                        '저장 후 화면을 갱신하지 못했습니다.',
+                        'error'
+                      );
+
+                      return;
+                    }
+
+                    try{
+
+                      dashResult.schedules =
+                        await loadExternalSchedule(
+                          dashResult
+                            .settings
+                            .externalScheduleUrl,
+                          dashResult.today.date
+                        );
+
+                      dashResult.schedules =
+                        sortSchedules(
+                          dashResult.schedules
+                        );
+
+                    }catch(error){
+
+                      dashResult.schedules = [];
+                    }
+
+                    dashboard =
+                      dashResult;
+
+                    renderDashboard();
+
+                    if(
+                      document
+                        .getElementById(
+                          'settingsModal'
+                        )
+                        .classList
+                        .contains('show')
+                    ){
+
+                      renderSettings();
+                    }
+
+                    hideLoading();
+
+                    button.disabled = false;
+
+                    button.textContent =
+                      '저장';
+
+                    toast(
+                      result.message ||
+                      '저장되었습니다.',
+                      'success'
+                    );
+                  }
+                )
+                .withFailureHandler(
+                  function(error){
+
+                    hideLoading();
+
+                    button.disabled = false;
+
+                    button.textContent =
+                      '저장';
+
+                    toast(
+                      error &&
+                      error.message
+                        ? error.message
+                        : '저장 후 화면을 갱신하지 못했습니다.',
+                      'error'
+                    );
+                  }
+                )
+                .getDashboardData(
+                  teacherId
+                );
+            }
+          )
+          .withFailureHandler(
+            function(error){
+
+              hideLoading();
+
+              button.disabled = false;
+
+              button.textContent =
+                '저장';
+
+              toast(
+                error &&
+                error.message
+                  ? error.message
+                  : '관리자 정보를 갱신하지 못했습니다.',
+                'error'
+              );
+            }
+          )
+          .adminGetData(
+            adminToken
+          );
+      }
+    )
+    .withFailureHandler(
+      function(error){
+
+        hideLoading();
+
+        button.disabled = false;
+
+        button.textContent =
+          '저장';
+
+        showModal(
+          'editorModal'
+        );
+
+        toast(
+          error &&
+          error.message
+            ? error.message
+            : '저장 중 오류가 발생했습니다.',
+          'error'
+        );
+      }
+    )
+    .adminSaveRow(
+      adminToken,
+      editSheet,
+      record
+    );
+}
+
+
+/* =========================================================
+   DELETE
+   ========================================================= */
+
+function askDelete(
+  sheet,
+  id,
+  message
+){
+
+  deleteSheet = sheet;
+
+  deleteId = id;
+
+  text(
+    'deleteText',
+    message
+  );
+
+  showModal(
+    'deleteModal'
+  );
+}
+
+function doDelete(){
+
+  if(
+    !deleteSheet ||
+    !deleteId
+  ){
+    return;
+  }
+
+  const targetSheet =
+    deleteSheet;
+
+  const targetId =
+    deleteId;
+
+  hideModal(
+    'deleteModal'
+  );
+
+  showLoading(
+    '삭제하는 중...'
+  );
+
+  hubRun()
+    .withSuccessHandler(
+      function(result){
+
+        if(
+          !result ||
+          !result.success
+        ){
+
+          hideLoading();
+
+          toast(
+            result &&
+            result.message
+              ? result.message
+              : '삭제하지 못했습니다.',
+            'error'
+          );
+
+          return;
+        }
+
+        hubRun()
+          .withSuccessHandler(
+            function(adminResult){
+
+              adminData =
+                adminResult.data || {};
+
+              deleteSheet = '';
+
+              deleteId = '';
+
+              hubRun()
+                .withSuccessHandler(
+                  async function(dashResult){
+
+                    if(
+                      !dashResult ||
+                      !dashResult.success
+                    ){
+
+                      hideLoading();
+
+                      toast(
+                        '삭제 후 화면을 새로 불러오지 못했습니다.',
+                        'error'
+                      );
+
+                      return;
+                    }
+
+                    try{
+
+                      dashResult.schedules =
+                        await loadExternalSchedule(
+                          dashResult
+                            .settings
+                            .externalScheduleUrl,
+                          dashResult.today.date
+                        );
+
+                      dashResult.schedules =
+                        sortSchedules(
+                          dashResult.schedules
+                        );
+
+                    }catch(error){
+
+                      dashResult.schedules = [];
+                    }
+
+                    dashboard =
+                      dashResult;
+
+                    renderDashboard();
+
+                    if(
+                      document
+                        .getElementById(
+                          'settingsModal'
+                        )
+                        .classList
+                        .contains('show')
+                    ){
+
+                      renderSettings();
+                    }
+
+                    hideLoading();
+
+                    toast(
+                      result.message ||
+                      '삭제되었습니다.',
+                      'success'
+                    );
+                  }
+                )
+                .withFailureHandler(
+                  function(error){
+
+                    hideLoading();
+
+                    toast(
+                      error &&
+                      error.message
+                        ? error.message
+                        : '삭제 후 화면을 갱신하지 못했습니다.',
+                      'error'
+                    );
+                  }
+                )
+                .getDashboardData(
+                  teacherId
+                );
+            }
+          )
+          .withFailureHandler(
+            function(error){
+
+              hideLoading();
+
+              toast(
+                error &&
+                error.message
+                  ? error.message
+                  : '관리자 데이터를 갱신하지 못했습니다.',
+                'error'
+              );
+            }
+          )
+          .adminGetData(
+            adminToken
+          );
+      }
+    )
+    .withFailureHandler(
+      function(error){
+
+        hideLoading();
+
+        toast(
+          error &&
+          error.message
+            ? error.message
+            : '삭제 중 오류가 발생했습니다.',
+          'error'
+        );
+      }
+    )
+    .adminDeleteRow(
+      adminToken,
+      targetSheet,
+      targetId
+    );
+}
+
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+function openSettings(){
+
+  if(
+    adminRole !== 'admin'
+  ){
+    return;
+  }
+
+  currentSettingsTab =
+    'Teachers';
+
+  renderSettings();
+
+  showModal(
+    'settingsModal'
+  );
+}
+
+function renderSettings(){
+
+  if(
+    adminRole !== 'admin'
+  ){
+    return;
+  }
+
+  document
+    .getElementById(
+      'teachersTab'
+    )
+    .classList
+    .toggle(
+      'active',
+      currentSettingsTab ===
+      'Teachers'
+    );
+
+  document
+    .getElementById(
+      'settingsTab'
+    )
+    .classList
+    .toggle(
+      'active',
+      currentSettingsTab ===
+      'Settings'
+    );
+
+  document
+    .getElementById(
+      'settingsAddBtn'
+    )
+    .style.display =
+      currentSettingsTab ===
+      'Teachers'
+        ? ''
+        : 'none';
+
+  text(
+    'settingsTitle',
+    currentSettingsTab ===
+    'Teachers'
+      ? '교사 관리'
+      : '기본 설정'
+  );
+
+  const rows =
+    adminData[
+      currentSettingsTab
+    ] || [];
+
+  let html = '';
+
+  if(
+    currentSettingsTab ===
+    'Teachers'
+  ){
+
+    html = `
+      <table>
+
+        <thead>
+          <tr>
+            <th>이름</th>
+            <th>역할</th>
+            <th>학년</th>
+            <th>반</th>
+            <th>부서</th>
+            <th>사용</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${
+            rows.map(
+              (row,index) => `
+                <tr>
+
+                  <td>
+                    ${escapeHtml(row.name || '')}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(row.role || '')}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(row.grade || '')}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(row.class || '')}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(row.department || '')}
+                  </td>
+
+                  <td>
+                    ${
+                      String(
+                        row.useYn || ''
+                      ).toUpperCase() ===
+                      'Y'
+                        ? '사용'
+                        : '사용 안 함'
+                    }
+                  </td>
+
+                  <td>
+
+                    <button
+                      class="mini"
+                      onclick="editSettingsRow(${index})"
+                    >
+                      ✏️
+                    </button>
+
+                    <button
+                      class="mini delete"
+                      onclick="deleteSettingsRow(${index})"
+                    >
+                      🗑️
+                    </button>
+
+                  </td>
+
+                </tr>
+              `
+            ).join('')
+          }
+
+        </tbody>
+
+      </table>
+    `;
+
+  }else{
+
+    html = `
+      <table>
+
+        <thead>
+          <tr>
+            <th>항목</th>
+            <th>설정값</th>
+            <th>설명</th>
+            <th>관리</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          ${
+            rows.map(
+              (row,index) => `
+                <tr>
+
+                  <td>
+                    ${escapeHtml(row.key || '')}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(maskSetting(row))}
+                  </td>
+
+                  <td>
+                    ${escapeHtml(row.description || '')}
+                  </td>
+
+                  <td>
+
+                    <button
+                      class="mini"
+                      onclick="editSettingsRow(${index})"
+                    >
+                      ✏️
+                    </button>
+
+                  </td>
+
+                </tr>
+              `
+            ).join('')
+          }
+
+        </tbody>
+
+      </table>
+    `;
+  }
+
+  document
+    .getElementById(
+      'settingsTable'
+    )
+    .innerHTML =
+      html;
+}
+
+function maskSetting(row){
+
+  if(
+    row.isSensitive ||
+    [
+      'adminPassword',
+      'userPassword',
+      'neisApiKey'
+    ].includes(
+      row.key
+    )
+  ){
+
+    return '••••••••';
+  }
+
+  return String(
+    row.value ?? ''
+  );
+}
+
+function addTeacher(){
+
+  openEditor(
+    'Teachers',
+    {
+      name:'',
+      role:'교사',
+      grade:'',
+      class:'',
+      department:'',
+      useYn:'Y'
+    }
+  );
+}
+
+function editSettingsRow(index){
+
+  const row =
+    adminData[
+      currentSettingsTab
+    ][index];
+
+  openEditor(
+    currentSettingsTab,
+    Object.assign(
+      {},
+      row
+    )
+  );
+}
+
+function deleteSettingsRow(index){
+
+  const row =
+    adminData
+      .Teachers[index];
+
+  askDelete(
+    'Teachers',
+    row.teacherId,
+    '이 교사를 삭제하시겠습니까?'
+  );
+}
+
+
+/* =========================================================
+   TEACHERS
+   ========================================================= */
+
+function loadTeachers(initial){
+
+  showLoading(
+    '교사 목록을 불러오는 중...'
+  );
+
+  hubRun()
+    .withSuccessHandler(
+      function(result){
+
+        teachers =
+          result.teachers || [];
+
+        selectedTeacherId =
+          teacherId || '';
+
+        renderTeacherList();
+
+        document
+          .getElementById(
+            'teacherCancel'
+          )
+          .style.display =
+            initial
+              ? 'none'
+              : '';
+
+        hideLoading();
+
+        showModal(
+          'teacherModal'
+        );
+      }
+    )
+    .withFailureHandler(
+      function(error){
+
+        hideLoading();
+
+        toast(
+          error &&
+          error.message
+            ? error.message
+            : '교사 목록을 불러오지 못했습니다.',
+          'error'
+        );
+      }
+    )
+    .getTeacherList();
+}
+
+function renderTeacherList(){
+
+  const area =
+    document
+      .getElementById(
+        'teacherList'
+      );
+
+  area.innerHTML = '';
+
+  teachers.forEach(
+    function(teacher){
+
+      const div =
+        document.createElement(
+          'div'
+        );
+
+      div.className =
+        'teacher-item' +
+        (
+          teacher.teacherId ===
+          selectedTeacherId
+            ? ' selected'
+            : ''
+        );
+
+      div.innerHTML = `
+        <div class="teacher-name">
+          ${escapeHtml(getTeacherDisplayName(teacher))}
+        </div>
+
+        ${
+          isSpecialTeacher(teacher)
+            ? ''
+            : `
+              <div class="teacher-role">
+                ${escapeHtml(teacher.role || '')}
+              </div>
+            `
+        }
+      `;
+
+      div.onclick =
+        function(){
+
+          selectedTeacherId =
+            teacher.teacherId;
+
+          renderTeacherList();
+        };
+
+      area.appendChild(
+        div
+      );
+    }
+  );
+}
+
+function confirmTeacher(){
+
+  if(
+    !selectedTeacherId
+  ){
+
+    toast(
+      '선생님을 선택해 주세요.',
+      'error'
+    );
+
+    return;
+  }
+
+  teacherId =
+    selectedTeacherId;
+
+  localStorage.setItem(
+    STORAGE_TEACHER,
+    teacherId
+  );
+
+  hideModal(
+    'teacherModal'
+  );
+
+  loadDashboard({
+    showOverlay:true,
+    loadingMessage:
+      '선생님 정보를 불러오는 중...'
+  });
+}
+
+function getTeacherDisplayName(
+  teacher
+){
+
+  const name =
+    String(
+      teacher.name || ''
+    ).trim();
+
+  if(
+    name === '유찬관'
+  ){
+    return '유찬관 교장선생님';
+  }
+
+  if(
+    name === '김성곤'
+  ){
+    return '김성곤 교감선생님';
+  }
+
+  if(
+    name === '박종필'
+  ){
+    return '박종필 수석선생님';
+  }
+
+  return (
+    name +
+    ' 선생님'
+  );
+}
+
+function isSpecialTeacher(
+  teacher
+){
+
+  return [
+    '유찬관',
+    '김성곤',
+    '박종필'
+  ].includes(
+    String(
+      teacher.name || ''
+    ).trim()
+  );
+}
+
+
+/* =========================================================
+   AUTO REFRESH
+   ========================================================= */
+
+function setAutoRefresh(
+  minutes
+){
+
+  if(
+    autoRefreshTimer
+  ){
+
+    clearInterval(
+      autoRefreshTimer
+    );
+  }
+
+  autoRefreshTimer =
+    setInterval(
+      function(){
+
+        if(teacherId){
+
+          loadDashboard({
+            showOverlay:false
+          });
+        }
+      },
+
+      Math.max(
+        1,
+        Number(
+          minutes || 5
+        )
+      ) *
+      60000
+    );
+}
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function findAdminRow(
+  sheet,
+  field,
+  value
+){
+
+  return (
+    adminData[sheet] || []
+  )
+    .find(
+      row =>
+        String(
+          row[field]
+        ) ===
+        String(
+          value
+        )
+    ) || null;
+}
+
+function getGreeting(){
+
+  const hour =
+    Number(
+      new Intl.DateTimeFormat(
+        'en-US',
+        {
+          timeZone:
+            'Asia/Seoul',
+          hour:
+            '2-digit',
+          hour12:
+            false
+        }
+      )
+      .format(
+        new Date()
+      )
+    );
+
+  if(hour < 11){
+    return '좋은 아침입니다';
+  }
+
+  if(hour < 17){
+    return '좋은 오후입니다';
+  }
+
+  return '좋은 저녁입니다';
+}
+
+function getPrimaryKey(
+  sheet
+){
+
+  return {
+    Notices:
+      'noticeId',
+
+    Tasks:
+      'taskId',
+
+    Links:
+      'linkId',
+
+    Encouragements:
+      'encouragementId',
+
+    Teachers:
+      'teacherId',
+
+    Settings:
+      'key'
+
+  }[sheet];
+}
+
+function getSheetLabel(
+  sheet
+){
+
+  return {
+    Notices:
+      '공지사항',
+
+    Tasks:
+      '오늘 해야 할 일',
+
+    Links:
+      '바로가기',
+
+    Encouragements:
+      '오늘의 한마디',
+
+    Teachers:
+      '교사',
+
+    Settings:
+      '기본 설정'
+
+  }[sheet] || sheet;
+}
+
+function getFieldLabel(
+  field
+){
+
+  return {
+    title:
+      '제목',
+
+    content:
+      '내용',
+
+    description:
+      '설명',
+
+    startDate:
+      '표시 시작일',
+
+    endDate:
+      '표시 종료일',
+
+    repeatType:
+      '반복',
+
+    dueDate:
+      '실제 마감일',
+
+    target:
+      '대상',
+
+    priority:
+      '중요도',
+
+    url:
+      '링크 주소',
+
+    useYn:
+      '사용 여부',
+
+    completedYn:
+      '처리 상태',
+
+    message:
+      '문구',
+
+    author:
+      '출처 / 작성자',
+
+    name:
+      '이름',
+
+    category:
+      '구분',
+
+    icon:
+      '아이콘',
+
+    role:
+      '역할',
+
+    grade:
+      '학년',
+
+    class:
+      '반',
+
+    department:
+      '부서',
+
+    key:
+      '항목',
+
+    value:
+      '설정값'
+
+  }[field] || field;
+}
+
+function empty(message){
+
+  return `
+    <div class="empty">
+      ${escapeHtml(message)}
+    </div>
+  `;
+}
+
+function text(
+  id,
+  value
+){
+
+  const element =
+    document
+      .getElementById(id);
+
+  if(element){
+
+    element.textContent =
+      value ?? '';
+  }
+}
+
+function escapeHtml(value){
+
+  const div =
+    document.createElement(
+      'div'
+    );
+
+  div.textContent =
+    value == null
+      ? ''
+      : value;
+
+  return div.innerHTML;
+}
+
+function escapeAttr(value){
+
+  return escapeHtml(value)
+    .replace(
+      /"/g,
+      '&quot;'
+    );
+}
+
+function showModal(id){
+
+  document
+    .getElementById(id)
+    .classList
+    .add('show');
+}
+
+function hideModal(id){
+
+  document
+    .getElementById(id)
+    .classList
+    .remove('show');
+}
+
+function toast(
+  message,
+  type=''
+){
+
+  const div =
+    document.createElement(
+      'div'
+    );
+
+  div.className =
+    'toast ' +
+    type;
+
+  div.textContent =
+    message;
+
+  document
+    .getElementById(
+      'toasts'
+    )
+    .appendChild(
+      div
+    );
+
+  setTimeout(
+    function(){
+
+      div.remove();
+
+    },
+    3200
+  );
+}
+
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
+
+document
+  .getElementById(
+    'refreshBtn'
+  )
+  .onclick =
+    function(){
+
+      const button =
+        document
+          .getElementById(
+            'refreshBtn'
+          );
+
+      if(button.disabled){
+        return;
+      }
+
+      button.disabled = true;
+
+      button.textContent =
+        '↻ 갱신 중...';
+
+      loadDashboard({
+        showOverlay:false,
+        successMessage:
+          '최신 정보로 갱신했습니다.',
+        onFinish:
+          function(){
+
+            button.disabled =
+              false;
+
+            button.textContent =
+              '↻ 새로고침';
+          }
+      });
+    };
+
+document
+  .getElementById(
+    'teacherBtn'
+  )
+  .onclick =
+    function(){
+
+      loadTeachers(false);
+    };
+
+document
+  .getElementById(
+    'teacherCancel'
+  )
+  .onclick =
+    function(){
+
+      hideModal(
+        'teacherModal'
+      );
+    };
+
+document
+  .getElementById(
+    'teacherOk'
+  )
+  .onclick =
+    confirmTeacher;
+
+document
+  .getElementById(
+    'adminLoginBtn'
+  )
+  .onclick =
+    openAdminLogin;
+
+document
+  .getElementById(
+    'loginCancel'
+  )
+  .onclick =
+    function(){
+
+      hideModal(
+        'loginModal'
+      );
+    };
+
+document
+  .getElementById(
+    'loginOk'
+  )
+  .onclick =
+    doAdminLogin;
+
+document
+  .getElementById(
+    'adminPassword'
+  )
+  .addEventListener(
+    'keydown',
+    function(event){
+
+      if(
+        event.key ===
+        'Enter'
+      ){
+
+        event.preventDefault();
+
+        doAdminLogin();
+      }
+    }
+  );
+
+document
+  .getElementById(
+    'adminExitBtn'
+  )
+  .onclick =
+    exitAdminMode;
+
+document
+  .getElementById(
+    'noticeAddBtn'
+  )
+  .onclick =
+    addNotice;
+
+document
+  .getElementById(
+    'taskAddBtn'
+  )
+  .onclick =
+    addTask;
+
+document
+  .getElementById(
+    'linkAddBtn'
+  )
+  .onclick =
+    addLink;
+
+document
+  .getElementById(
+    'quoteAddBtn'
+  )
+  .onclick =
+    addQuote;
+
+document
+  .getElementById(
+    'quoteEditBtn'
+  )
+  .onclick =
+    editQuote;
+
+document
+  .getElementById(
+    'quoteDeleteBtn'
+  )
+  .onclick =
+    deleteQuote;
+
+document
+  .getElementById(
+    'welcomeEditBtn'
+  )
+  .onclick =
+    editWelcome;
+
+document
+  .getElementById(
+    'welcomeCancel'
+  )
+  .onclick =
+    function(){
+
+      hideModal(
+        'welcomeModal'
+      );
+    };
+
+document
+  .getElementById(
+    'welcomeSave'
+  )
+  .onclick =
+    saveWelcome;
+
+document
+  .getElementById(
+    'editorCancel'
+  )
+  .onclick =
+    function(){
+
+      hideModal(
+        'editorModal'
+      );
+    };
+
+document
+  .getElementById(
+    'editorSave'
+  )
+  .onclick =
+    saveEditor;
+
+document
+  .getElementById(
+    'deleteCancel'
+  )
+  .onclick =
+    function(){
+
+      hideModal(
+        'deleteModal'
+      );
+    };
+
+document
+  .getElementById(
+    'deleteOk'
+  )
+  .onclick =
+    doDelete;
+
+document
+  .getElementById(
+    'settingsBtn'
+  )
+  .onclick =
+    openSettings;
+
+document
+  .getElementById(
+    'teachersTab'
+  )
+  .onclick =
+    function(){
+
+      currentSettingsTab =
+        'Teachers';
+
+      renderSettings();
+    };
+
+document
+  .getElementById(
+    'settingsTab'
+  )
+  .onclick =
+    function(){
+
+      currentSettingsTab =
+        'Settings';
+
+      renderSettings();
+    };
+
+document
+  .getElementById(
+    'settingsAddBtn'
+  )
+  .onclick =
+    addTeacher;
+
+document
+  .getElementById(
+    'settingsClose'
+  )
+  .onclick =
+    function(){
+
+      hideModal(
+        'settingsModal'
+      );
+    };
+
+</script>
+
+</body>
+</html>
