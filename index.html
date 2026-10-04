@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko" data-hub-layout="three-column-grade-v4">
+<html lang="ko" data-hub-layout="welcome-meal-weather-v5">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -242,7 +242,7 @@ h1{
 .hello{
   margin:7px 0;
   color:#294e69;
-  font-size:25px;
+  font-size:12.5px;
   font-weight:850;
 }
 
@@ -254,6 +254,7 @@ h1{
 
 .welcome{
   margin:0;
+  font-size:10.67px;
   color:#718692;
   line-height:1.7;
   white-space:pre-line;
@@ -1182,7 +1183,7 @@ th{
 
 /* 상단 세 칸과 그룹 선택 */
 .hero > div { min-width:0; }
-.hero-meal { border-left:1px solid rgba(100,130,150,.18); padding-left:22px; }
+.hero-meal, .hero-weather { border-left:1px solid rgba(100,130,150,.18); padding-left:22px; }
 .hero-meal .card-title { font-size:14px; margin-bottom:10px; }
 .choice-panel { border:1px solid #dbe6ee; border-radius:12px; padding:12px; background:#f8fbfd; }
 .choice-list { max-height:230px; overflow:auto; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:10px; }
@@ -1191,7 +1192,7 @@ th{
 .choice-help { color:#718692; font-size:12px; line-height:1.6; margin-top:8px; }
 .choice-panel .choice-search { width:100%; margin-bottom:4px; }
 .notice-target { margin-top:5px; color:#607f92; font-size:11px; }
-@media(max-width:900px){ .hero-meal{border-left:0;border-top:1px solid rgba(100,130,150,.18);padding-left:0;padding-top:16px;} }
+@media(max-width:900px){ .hero-meal, .hero-weather{border-left:0;border-top:1px solid rgba(100,130,150,.18);padding-left:0;padding-top:16px;} }
 @media(max-width:520px){ .choice-list{grid-template-columns:1fr;} }
 
 
@@ -1327,7 +1328,15 @@ th{
     </div>
   </div>
 
-  <div>
+    <div class="hero-meal">
+      <div class="card-title">
+        🍚 오늘의 급식
+      </div>
+
+      <div id="mealArea"></div>
+    </div>
+
+  <div class="hero-weather">
     <div class="weather-title">
       오늘의 날씨
     </div>
@@ -1396,14 +1405,6 @@ th{
       ></div>
     </div>
   </div>
-
-    <div class="hero-meal">
-      <div class="card-title">
-        🍚 오늘의 급식
-      </div>
-
-      <div id="mealArea"></div>
-    </div>
 
 </section>
 
@@ -6622,10 +6623,10 @@ function getGroupMembersLabel(group){
 }
 function getNoticeTargetOptions(current){
   const options = getGroupRows().filter(g=>g.useYn !== 'N' || hubList(current).includes('group:'+g.groupId))
-    .map(g=>({value:'group:'+g.groupId,label:'그룹 · '+g.name+(g.useYn === 'N' ? ' (사용 안 함)' : ''),kind:'그룹'}));
+    .map(g=>({value:'group:'+g.groupId,label:'👥 '+g.name+(g.useYn === 'N' ? ' (사용 안 함)' : ''),kind:'그룹'}));
   adminTeachers.forEach(teacher=>{
     const value=String(teacher.teacherId);
-    if(!options.some(o=>o.value === value)) options.push({value:value,label:'사용자 · '+getTeacherDisplayName(teacher),kind:'사용자'});
+    if(!options.some(o=>o.value === value)) options.push({value:value,label:'👤 '+getTeacherDisplayName(teacher),kind:'사용자'});
   });
   // 기존 학년·역할·개인 대상은 수정 시 보존합니다.
   hubList(current).filter(v=>v !== '전체' && !options.some(o=>o.value === v)).forEach(v=>{
