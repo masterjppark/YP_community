@@ -492,6 +492,23 @@ h1{
   font-weight:800;
 }
 
+.compact-info-list{display:flex;flex-direction:column;gap:6px;}
+.compact-info-row{width:100%;display:flex;align-items:center;gap:12px;padding:10px 11px;border:1px solid #edf2f5;border-radius:11px;background:#fafcfd;cursor:pointer;text-align:left;transition:.15s ease;}
+.compact-info-row:hover{background:#f3f8fb;border-color:#dceaf2;transform:translateY(-1px);}
+.compact-info-main{flex:1;min-width:0;}
+.compact-info-title{display:flex;align-items:center;gap:5px;min-width:0;color:#365165;font-size:12px;font-weight:800;}
+.compact-info-title-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.compact-info-meta{margin-top:4px;color:#8a9aa5;font-size:10px;}
+.detail-modal{max-width:620px;}
+.detail-kind{color:#7c909e;font-size:11px;font-weight:800;margin-bottom:8px;}
+.detail-title{color:#334f63;font-size:19px;line-height:1.45;font-weight:850;overflow-wrap:anywhere;}
+.detail-meta-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;margin-top:16px;padding:12px 14px;border-radius:12px;background:#f7fafc;}
+.detail-meta-item{min-width:0;color:#6f8391;font-size:11px;}
+.detail-meta-item strong{color:#536c7c;margin-right:7px;}
+.detail-content{margin-top:16px;padding-top:16px;border-top:1px solid #edf1f4;color:#566f7f;font-size:12px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere;}
+.detail-link-row{margin-top:14px;}
+@media(max-width:640px){.compact-info-row{padding:9px 10px}.compact-info-title{font-size:11.5px}.detail-meta-grid{grid-template-columns:1fr}}
+
 .mini{
   min-width:28px;
   height:28px;
@@ -1612,6 +1629,22 @@ th{
   </div>
 </div>
 
+<!-- DETAIL MODAL -->
+<div id="detailModal" class="modal-bg">
+  <div class="modal detail-modal">
+    <div id="detailKind" class="detail-kind"></div>
+    <div id="detailTitle" class="detail-title"></div>
+    <div id="detailMeta" class="detail-meta-grid"></div>
+    <div id="detailContent" class="detail-content"></div>
+    <div id="detailLink" class="detail-link-row"></div>
+    <div class="modal-actions">
+      <button id="detailDelete" class="btn danger" style="display:none;">삭제</button>
+      <button id="detailEdit" class="btn primary" style="display:none;">수정</button>
+      <button class="btn" onclick="hideModal('detailModal')">닫기</button>
+    </div>
+  </div>
+</div>
+
 <!-- EDITOR MODAL -->
 
 <div
@@ -2434,125 +2467,25 @@ function renderNoticeArea(type,listId,countId){
   const rows = (dashboard.notices || []).map((row,index)=>({row,index}))
     .filter(item=>getNoticeType(item.row) === type);
 
-  text(
-    countId,
-    '(' +
-    rows.length +
-    ')'
-  );
-
-  const area =
-    document
-      .getElementById(
-        listId
-      );
+  text(countId,'(' + rows.length + ')');
+  const area = document.getElementById(listId);
 
   if(!rows.length){
-
-    area.innerHTML =
-      empty(
-        type === '학년' ? '선택한 선생님에게 표시할 학년 알림이 없습니다.' : '학교 전체 공지가 없습니다.'
-      );
-
+    area.innerHTML = empty(type === '학년' ? '선택한 선생님에게 표시할 학년 알림이 없습니다.' : '학교 전체 공지가 없습니다.');
     return;
   }
 
-  area.innerHTML =
-    rows.map(
-      ({row,index}) => `
-        <div class="item">
-
-          <div class="item-icon">
-            📌
-          </div>
-
-          <div class="item-body">
-
-            <div class="item-head">
-
-              <div class="item-title">
-
-                ${escapeHtml(row.title)}
-
-                ${
-                  row.isNew
-                    ? '<span class="new-badge">NEW</span>'
-                    : ''
-                }
-
-              </div>
-
-              ${
-                canEditNoticeInUi(row, type)
-                  ? `
-                    <div class="inline-tools">
-
-                      <button
-                        class="mini"
-                        onclick="editNotice(${index})"
-                      >
-                        ✏️
-                      </button>
-
-                      ${adminRole === 'member' ? '' : `
-                      <button
-                        class="mini delete"
-                        onclick="deleteNotice(${index})"
-                      >
-                        🗑️
-                      </button>`}
-
-                    </div>
-                  `
-                  : ''
-              }
-
-            </div>
-
-            <div class="notice-target">${escapeHtml(row.targetLabel || getTargetLabel(row.target))}</div>
-            ${
-              row.endDate
-                ? `
-                  <div class="item-meta">
-                    ~ ${escapeHtml(row.endDate)}
-                  </div>
-                `
-                : ''
-            }
-
-            ${
-              row.content
-                ? `
-                  <div class="item-desc">
-                    ${escapeHtml(row.content)}
-                  </div>
-                `
-                : ''
-            }
-
-            ${
-              row.url
-                ? `
-                  <div class="item-link-row">
-                    <a
-                      class="item-url-link"
-                      href="${escapeAttr(row.url)}"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      🔗 URL Link
-                    </a>
-                  </div>
-                `
-                : ''
-            }
-
-          </div>
+  area.innerHTML = '<div class="compact-info-list">' + rows.map(({row,index}) => `
+    <button type="button" class="compact-info-row" onclick="openNoticeDetail(${index})">
+      <div class="compact-info-main">
+        <div class="compact-info-title">
+          <span class="compact-info-title-text">${escapeHtml(row.title || '')}</span>
+          ${row.isNew ? '<span class="new-badge">NEW</span>' : ''}
         </div>
-      `
-    ).join('');
+        <div class="compact-info-meta">${escapeHtml(getAuthorName(row))} · ${escapeHtml(formatCreatedDate(row.createdAt))}</div>
+      </div>
+    </button>`).join('') + '</div>';
 }
-
 
 /* =========================================================
    SCHEDULES
@@ -2618,188 +2551,110 @@ function renderSchedules(){
    ========================================================= */
 
 function renderTasks(){
-
-  const rows =
-    dashboard.tasks || [];
-
-  text(
-    'taskCount',
-    '(' +
-    rows.length +
-    ')'
-  );
-
-  const area =
-    document
-      .getElementById(
-        'taskList'
-      );
+  const rows = dashboard.tasks || [];
+  text('taskCount','(' + rows.length + ')');
+  const area = document.getElementById('taskList');
 
   if(!rows.length){
-
-    area.innerHTML =
-      empty(
-        '오늘 안내할 업무가 없습니다. 👍'
-      );
-
+    area.innerHTML = empty('오늘 안내할 업무가 없습니다. 👍');
     return;
   }
 
-  area.innerHTML =
-    rows.map(
-      (row,index) => {
-
-        const meta = [];
-
-        if(
-          row.startDate &&
-          row.endDate
-        ){
-
-          if(
-            row.startDate ===
-            row.endDate
-          ){
-
-            meta.push(
-              row.startDate
-            );
-
-          }else{
-
-            meta.push(
-              row.startDate +
-              ' ~ ' +
-              row.endDate
-            );
-          }
-
-        }else if(
-          row.startDate
-        ){
-
-          meta.push(
-            row.startDate +
-            '부터'
-          );
-
-        }else if(
-          row.endDate
-        ){
-
-          meta.push(
-            row.endDate +
-            '까지'
-          );
-        }
-
-        if(row.dueDate){
-
-          meta.push(
-            '마감 ' +
-            row.dueDate
-          );
-        }
-
-        return `
-          <div class="item">
-
-            <div class="item-icon">
-              ✅
-            </div>
-
-            <div class="item-body">
-
-              <div class="item-head">
-
-                <div class="item-title">
-
-                  ${escapeHtml(row.title)}
-
-                  ${
-                    row.repeatType &&
-                    row.repeatType !==
-                    'NONE'
-                      ? '<span class="repeat-badge">' +
-                        escapeHtml(
-                          row.repeatLabel
-                        ) +
-                        '</span>'
-                      : ''
-                  }
-
-                </div>
-
-                ${
-                  (adminRole && adminRole !== 'member')
-                    ? `
-                      <div class="inline-tools">
-
-                        <button
-                          class="mini"
-                          onclick="editTask(${index})"
-                        >
-                          ✏️
-                        </button>
-
-                        <button
-                          class="mini delete"
-                          onclick="deleteTask(${index})"
-                        >
-                          🗑️
-                        </button>
-
-                      </div>
-                    `
-                    : ''
-                }
-
-              </div>
-
-              ${
-                meta.length
-                  ? `
-                    <div class="item-meta">
-                      ${escapeHtml(meta.join(' · '))}
-                    </div>
-                  `
-                  : ''
-              }
-
-              ${
-                row.description
-                  ? `
-                    <div class="item-desc">
-                      ${escapeHtml(row.description)}
-                    </div>
-                  `
-                  : ''
-              }
-
-              ${
-                row.url
-                  ? `
-                    <div class="item-link-row">
-                      <a
-                        class="item-url-link"
-                        href="${escapeAttr(row.url)}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        🔗 URL Link
-                      </a>
-                    </div>
-                  `
-                  : ''
-              }
-
-            </div>
-          </div>
-        `;
-      }
-    ).join('');
+  area.innerHTML = '<div class="compact-info-list">' + rows.map((row,index) => `
+    <button type="button" class="compact-info-row" onclick="openTaskDetail(${index})">
+      <div class="compact-info-main">
+        <div class="compact-info-title">
+          <span class="compact-info-title-text">${escapeHtml(row.title || '')}</span>
+          ${row.isNew ? '<span class="new-badge">NEW</span>' : ''}
+        </div>
+        <div class="compact-info-meta">${escapeHtml(getAuthorName(row))} · ${escapeHtml(formatCreatedDate(row.createdAt))}</div>
+      </div>
+    </button>`).join('') + '</div>';
 }
 
+function getAuthorName(row){
+  return String((row && row.createdByName) || '').trim() || '등록자 미기록';
+}
+
+function formatCreatedDate(value){
+  const raw = String(value || '').trim();
+  if(!raw) return '등록일 미기록';
+  const match = raw.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if(match) return String(match[2]).padStart(2,'0') + '.' + String(match[3]).padStart(2,'0');
+  return raw;
+}
+
+function formatCreatedDateLong(value){
+  const raw = String(value || '').trim();
+  if(!raw) return '등록일 미기록';
+  const match = raw.match(/(\d{4})[-./](\d{1,2})[-./](\d{1,2})/);
+  if(match) return match[1] + '.' + String(match[2]).padStart(2,'0') + '.' + String(match[3]).padStart(2,'0');
+  return raw;
+}
+
+function detailMetaHtml(items){
+  return items.filter(item=>item && item.value).map(item=>
+    '<div class="detail-meta-item"><strong>' + escapeHtml(item.label) + '</strong>' + escapeHtml(item.value) + '</div>'
+  ).join('');
+}
+
+function openNoticeDetail(index){
+  const row = (dashboard.notices || [])[index];
+  if(!row) return;
+  const type = getNoticeType(row);
+
+  text('detailKind', type === '학년' ? '👥 학년별 알림' : '📢 공지사항');
+  text('detailTitle', row.title || '');
+  document.getElementById('detailMeta').innerHTML = detailMetaHtml([
+    {label:'등록자',value:getAuthorName(row)},
+    {label:'등록일',value:formatCreatedDateLong(row.createdAt)},
+    {label:'대상',value:row.targetLabel || getTargetLabel(row.target)},
+    {label:'표시 기간',value:[row.startDate,row.endDate].filter(Boolean).join(' ~ ')}
+  ]);
+  document.getElementById('detailContent').textContent = row.content || '내용이 없습니다.';
+  document.getElementById('detailLink').innerHTML = row.url
+    ? '<a class="item-url-link" href="' + escapeAttr(row.url) + '" target="_blank" rel="noopener noreferrer">🔗 URL Link</a>'
+    : '';
+
+  const canEdit = canEditNoticeInUi(row,type);
+  const editBtn = document.getElementById('detailEdit');
+  const deleteBtn = document.getElementById('detailDelete');
+  editBtn.style.display = canEdit ? '' : 'none';
+  deleteBtn.style.display = canEdit && adminRole !== 'member' ? '' : 'none';
+  editBtn.onclick = function(){ hideModal('detailModal'); editNotice(index); };
+  deleteBtn.onclick = function(){ hideModal('detailModal'); deleteNotice(index); };
+  showModal('detailModal');
+}
+
+function openTaskDetail(index){
+  const row = (dashboard.tasks || [])[index];
+  if(!row) return;
+  const period = row.startDate || row.endDate ? [row.startDate,row.endDate].filter(Boolean).join(' ~ ') : '';
+
+  text('detailKind','✅ 오늘의 할 일');
+  text('detailTitle',row.title || '');
+  document.getElementById('detailMeta').innerHTML = detailMetaHtml([
+    {label:'등록자',value:getAuthorName(row)},
+    {label:'등록일',value:formatCreatedDateLong(row.createdAt)},
+    {label:'대상',value:row.targetLabel || getTargetLabel(row.target)},
+    {label:'표시 기간',value:period},
+    {label:'마감',value:row.dueDate || ''},
+    {label:'반복',value:row.repeatLabel || ''}
+  ]);
+  document.getElementById('detailContent').textContent = row.description || '내용이 없습니다.';
+  document.getElementById('detailLink').innerHTML = row.url
+    ? '<a class="item-url-link" href="' + escapeAttr(row.url) + '" target="_blank" rel="noopener noreferrer">🔗 URL Link</a>'
+    : '';
+
+  const canEdit = Boolean(adminRole && adminRole !== 'member');
+  const editBtn = document.getElementById('detailEdit');
+  const deleteBtn = document.getElementById('detailDelete');
+  editBtn.style.display = canEdit ? '' : 'none';
+  deleteBtn.style.display = canEdit ? '' : 'none';
+  editBtn.onclick = function(){ hideModal('detailModal'); editTask(index); };
+  deleteBtn.onclick = function(){ hideModal('detailModal'); deleteTask(index); };
+  showModal('detailModal');
+}
 
 /* =========================================================
    MEAL
