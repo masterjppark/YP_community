@@ -1577,7 +1577,7 @@ th{
     </h2>
 
     <div class="modal-desc">
-      비밀번호에 따라 총괄 관리자, 관리자, 학년 공지 작성자로 로그인합니다.
+      비밀번호에 따라 총괄 관리자, 관리자, 사용자로 로그인합니다.
     </div>
 
     <div class="field">
@@ -1999,6 +1999,8 @@ let adminToken = '';
 
 let adminRole = '';
 
+let adminTeacherId = '';
+
 let adminData = {};
 let adminGroups = [];
 let adminTeachers = [];
@@ -2415,6 +2417,19 @@ function getNoticeType(row){
   return !row.target || row.target === '전체' ? '학교' : '학년';
 }
 
+function canEditNoticeInUi(row, type){
+  if(!adminRole){
+    return false;
+  }
+  if(adminRole === 'admin' || adminRole === 'user'){
+    return true;
+  }
+  if(adminRole === 'member'){
+    return Boolean(findAdminRow('Notices','noticeId',row.noticeId));
+  }
+  return false;
+}
+
 function renderNoticeArea(type,listId,countId){
   const rows = (dashboard.notices || []).map((row,index)=>({row,index}))
     .filter(item=>getNoticeType(item.row) === type);
@@ -2468,7 +2483,7 @@ function renderNoticeArea(type,listId,countId){
               </div>
 
               ${
-                (adminRole && (adminRole !== 'grade' || type === '학년'))
+                canEditNoticeInUi(row, type)
                   ? `
                     <div class="inline-tools">
 
@@ -2479,12 +2494,13 @@ function renderNoticeArea(type,listId,countId){
                         ✏️
                       </button>
 
+                      ${adminRole === 'member' ? '' : `
                       <button
                         class="mini delete"
                         onclick="deleteNotice(${index})"
                       >
                         🗑️
-                      </button>
+                      </button>`}
 
                     </div>
                   `
@@ -2715,7 +2731,7 @@ function renderTasks(){
                 </div>
 
                 ${
-                  (adminRole && adminRole !== 'grade')
+                  (adminRole && adminRole !== 'member')
                     ? `
                       <div class="inline-tools">
 
@@ -3307,6 +3323,9 @@ function doAdminLogin(){
         adminRole =
           result.role;
 
+        adminTeacherId =
+          result.teacherId || '';
+
         hideModal(
           'loginModal'
         );
@@ -3344,7 +3363,8 @@ function doAdminLogin(){
       }
     )
     .adminLogin(
-      password
+      password,
+      teacherId
     );
 }
 
@@ -3421,7 +3441,7 @@ function updateAdminUi(){
     .classList
     .toggle(
       'show',
-      active && adminRole !== 'grade'
+      active
     );
 
   document.getElementById('gradeNoticeAddBtn').classList.toggle('show', true);
@@ -3433,7 +3453,7 @@ function updateAdminUi(){
     .classList
     .toggle(
       'show',
-      active && adminRole !== 'grade'
+      active && adminRole !== 'member'
     );
 
   document
@@ -3441,7 +3461,7 @@ function updateAdminUi(){
       'welcomeEditBtn'
     )
     .style.display =
-      active && adminRole !== 'grade'
+      active && adminRole !== 'member'
         ? ''
         : 'none';
 
@@ -3449,10 +3469,7 @@ function updateAdminUi(){
     .getElementById(
       'quoteTools'
     )
-    .style.display =
-      adminRole === 'admin'
-        ? 'flex'
-        : 'none';
+    .style.display = 'none';
 
   document
     .getElementById(
@@ -3484,7 +3501,7 @@ function updateAdminUi(){
 
     text(
       'adminDescription',
-      ' · 공지, 할 일, 환영 문구, 오늘의 한마디, 바로가기를 관리할 수 있습니다.'
+      ' · 전체 항목을 관리할 수 있습니다.'
     );
 
   }else if(
@@ -3500,9 +3517,9 @@ function updateAdminUi(){
       'adminDescription',
       ' · 공지, 할 일, 환영 문구를 관리할 수 있습니다.'
     );
-  }else if(adminRole === 'grade'){
-    text('adminTitle','👥 학년 공지 작성 모드');
-    text('adminDescription',' · 학년별 알림을 작성·수정·삭제할 수 있습니다.');
+  }else if(adminRole === 'member'){
+    text('adminTitle','👤 사용자 모드');
+    text('adminDescription',' · 공지사항과 학년별 알림을 작성·수정할 수 있습니다.');
   }
 }
 
@@ -3511,6 +3528,8 @@ function exitAdminMode(){
   adminToken = '';
 
   adminRole = '';
+
+  adminTeacherId = '';
 
   adminData = {};
   adminGroups = [];
@@ -3525,7 +3544,6 @@ function exitAdminMode(){
    ========================================================= */
 
 function addNotice(noticeType = '학교'){
-  if(adminRole === 'grade') noticeType = '학년';
 
   openEditor(
     'Notices',
@@ -4137,10 +4155,9 @@ function openEditor(
           control = document.createElement('select');
           control.id = 'noticeTypeSelect';
           control.dataset.field = field;
-          control.innerHTML = '<option value="학교">학교 전체 공지</option><option value="학년">동학년 안내</option>';
+          control.innerHTML = '<option value="학교">학교 전체 공지</option><option value="학년">학년별 알림</option>';
           control.value = editRecord.noticeType;
           control.onchange = updateNoticeTargetUi;
-          if(adminRole === 'grade') control.disabled = true;
         }else if(sheet === 'Notices' && field === 'target'){
           control = createHubTargetDropdown(editRecord.target || '전체');
           control.id = 'noticeTargetControl';
@@ -4440,7 +4457,7 @@ function saveEditor(){
   if(editSheet === 'Notices'){
     if(record.noticeType === '학교') record.target = '전체';
     if(!String(record.target || '').trim()){
-      toast('동학년 안내의 대상을 하나 이상 선택해 주세요.','error');
+      toast('학년별 알림의 대상을 하나 이상 선택해 주세요.','error');
       return;
     }
   }
@@ -4899,7 +4916,7 @@ function openSettings(){
     return;
   }
 
-  currentSettingsTab = adminRole === 'grade' ? 'Notices' : 'Welcome';
+  currentSettingsTab = adminRole === 'member' ? 'Notices' : 'Welcome';
   renderSettings();
   showModal('settingsModal');
 }
@@ -4915,24 +4932,24 @@ function renderSettings(){
   const allowedTabs =
     isSuperAdmin
       ? ['Welcome','Notices','Tasks','Groups','Teachers','Settings']
-      : adminRole === 'grade' ? ['Notices'] : ['Welcome','Notices','Tasks'];
+      : adminRole === 'member' ? ['Notices'] : ['Welcome','Notices','Tasks'];
 
   if(!allowedTabs.includes(currentSettingsTab)){
-    currentSettingsTab = adminRole === 'grade' ? 'Notices' : 'Welcome';
+    currentSettingsTab = adminRole === 'member' ? 'Notices' : 'Welcome';
   }
 
   text(
     'settingsModalTitle',
     isSuperAdmin
       ? '⚙️ 총괄 관리자 설정'
-      : adminRole === 'grade' ? '👥 학년별 알림 관리' : '⚙️ 관리자 설정'
+      : adminRole === 'member' ? '👤 사용자 알림 관리' : '⚙️ 관리자 설정'
   );
 
   text(
     'settingsModalDesc',
     isSuperAdmin
       ? '환영 문구, 공지사항, 할 일, 그룹 구성, 교직원과 기본 설정을 관리합니다.'
-      : adminRole === 'grade' ? '학년별 알림을 작성하고 대상을 선택할 수 있습니다.' : '환영 문구, 공지사항과 할 일을 한 곳에서 관리합니다.'
+      : adminRole === 'member' ? '내 학년의 알림과 내가 작성한 공지사항을 확인하고 수정할 수 있습니다.' : '환영 문구, 공지사항, 학년별 알림과 할 일을 한 곳에서 관리합니다.'
   );
 
   const tabMap = {
@@ -4966,7 +4983,7 @@ function renderSettings(){
 
   if(currentSettingsTab === 'Notices'){
     addButton.style.display = '';
-    addButton.textContent = adminRole === 'grade' ? '+ 학년 알림' : '+ 공지 추가';
+    addButton.textContent = adminRole === 'member' ? '+ 새 알림' : '+ 공지 추가';
   }else if(currentSettingsTab === 'Tasks'){
     addButton.style.display = '';
     addButton.textContent = '+ 할 일 추가';
@@ -4991,7 +5008,7 @@ function renderSettings(){
 
   text(
     'settingsTitle',
-    adminRole === 'grade' ? '학년별 알림 관리' : titleMap[currentSettingsTab] || '관리'
+    adminRole === 'member' ? '공지사항 · 학년별 알림' : titleMap[currentSettingsTab] || '관리'
   );
 
   const area =
@@ -5112,7 +5129,7 @@ function renderSettings(){
                     <tr>
                       <td>
                         <span class="cell-ellipsis" title="${escapeAttr(row.title || '')}">
-                          <small>${getNoticeType(row) === '학교' ? '학교' : '동학년'}</small> ${escapeHtml(row.title || '')}
+                          <small>${getNoticeType(row) === '학교' ? '학교' : '학년'}</small> ${escapeHtml(row.title || '')}
                         </span>
                       </td>
                       <td>${escapeHtml(formatManagePeriod(row.startDate,row.endDate))}</td>
@@ -5124,7 +5141,7 @@ function renderSettings(){
                       <td>${String(row.useYn || 'Y').toUpperCase() === 'Y' ? '사용' : '사용 안 함'}</td>
                       <td>
                         <button class="mini" onclick="editManagedRow('Notices',${index})">✏️</button>
-                        <button class="mini delete" onclick="deleteManagedRow('Notices',${index})">🗑️</button>
+                        ${adminRole === 'member' ? '' : `<button class="mini delete" onclick="deleteManagedRow('Notices',${index})">🗑️</button>`}
                       </td>
                     </tr>
                   `;
