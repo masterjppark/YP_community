@@ -1383,32 +1383,7 @@ th{
           💬 오늘의 한마디
         </div>
 
-        <div
-          id="quoteTools"
-          class="inline-tools"
-          style="display:none;"
-        >
-          <button
-            id="quoteAddBtn"
-            class="mini"
-          >
-            ＋
-          </button>
-
-          <button
-            id="quoteEditBtn"
-            class="mini"
-          >
-            ✏️
-          </button>
-
-          <button
-            id="quoteDeleteBtn"
-            class="mini delete"
-          >
-            🗑️
-          </button>
-        </div>
+        <div id="quoteTools" class="inline-tools" style="display:none;"></div>
       </div>
 
       <div
@@ -2379,60 +2354,17 @@ function renderWeather(){
 
 function renderQuote(){
 
-  const item =
-    dashboard.encouragement || {};
+  const item = dashboard.encouragement || {};
 
   text(
     'quoteMessage',
-    item.message
-      ? '“' +
-        item.message +
-        '”'
-      : ''
+    item.message ? '“' + item.message + '”' : ''
   );
 
   text(
     'quoteAuthor',
-    item.author
-      ? '— ' +
-        item.author
-      : ''
+    item.author ? '— ' + item.author : ''
   );
-
-  const hasItem =
-    Boolean(
-      item.encouragementId
-    );
-
-  document
-    .getElementById(
-      'quoteAddBtn'
-    )
-    .style.display =
-      adminRole === 'admin' &&
-      !hasItem
-        ? ''
-        : 'none';
-
-  document
-    .getElementById(
-      'quoteEditBtn'
-    )
-    .style.display =
-      adminRole === 'admin' &&
-      hasItem
-        ? ''
-        : 'none';
-
-  document
-    .getElementById(
-      'quoteDeleteBtn'
-    )
-    .style.display =
-      adminRole === 'admin' &&
-      hasItem
-        ? ''
-        : 'none';
 }
 
 
@@ -3320,11 +3252,7 @@ function updateAdminUi(){
         ? ''
         : 'none';
 
-  document
-    .getElementById(
-      'quoteTools'
-    )
-    .style.display = 'none';
+  document.getElementById('quoteTools').style.display = 'none';
 
   document
     .getElementById(
@@ -6273,26 +6201,6 @@ document
   .onclick =
     addLink;
 
-document
-  .getElementById(
-    'quoteAddBtn'
-  )
-  .onclick =
-    addQuote;
-
-document
-  .getElementById(
-    'quoteEditBtn'
-  )
-  .onclick =
-    editQuote;
-
-document
-  .getElementById(
-    'quoteDeleteBtn'
-  )
-  .onclick =
-    deleteQuote;
 
 document
   .getElementById(
